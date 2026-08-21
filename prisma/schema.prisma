@@ -1,0 +1,289 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  plan               String   @default("free") // free, pro, enterprise
+  role               String   @default("USER") // USER, ADMIN
+  maxTenants         Int      @default(1)
+  maxAgentsPerTenant Int      @default(1)
+  status             String   @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  tenants            Tenant[]
+}
+
+model Tenant {
+  id               String            @id @default(uuid())
+  name             String
+  ownerId          String?
+  owner            User?             @relation(fields: [ownerId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  sdrConfigs       SDRConfig[]
+  leads            Lead[]
+  knowledgeSources KnowledgeSource[]
+  mediaAssets      MediaAsset[]
+  flows            Flow[]
+  outboundCampaigns OutboundCampaign[]
+}
+
+model SDRConfig {
+  id                      String   @id @default(uuid())
+  tenantId                String
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name                    String
+  personaName             String
+  personaRole             String
+  personality             String   @db.Text
+  baseInstructions        String   @db.Text
+  instanceName            String?  @unique
+  maxWords                Int      @default(40)
+  splitMessages           Boolean  @default(true)
+  maxBubbles              Int      @default(3)
+  qualificationFlow       String   @default("Perguntar nome, email, intenção de compra e orçamento.") @db.Text
+  postQualificationAction String   @default("Notificar equipe de vendas e salvar no CRM.") @db.Text
+  webhookUrl              String   @default("")
+  spreadsheetEnabled      Boolean  @default(false)
+  businessHoursStart      String   @default("08:00")
+  businessHoursEnd        String   @default("18:00")
+  businessDays            String   @default("1,2,3,4,5") // 1=Mon, 5=Fri
+  followUpEnabled         Boolean  @default(true)
+  followUpDelayHours      Int      @default(2)
+  followUpMaxAttempts     Int      @default(3)
+  followUpMode            String   @default("AI_CONTEXTUAL") // "AI_CONTEXTUAL" | "CUSTOM_SEQUENCE"
+  followUpSequence        String?  @db.Text
+  followUpActionAfterLimit String  @default("PAUSE_FOLLOWUP") // "PAUSE_FOLLOWUP" | "UNRESPONSIVE" | "DISQUALIFY"
+  filterEnabled           Boolean  @default(false)
+  triggerType             String   @default("ALL") // ALL, KEYWORD, TAG_MATCH, NEW_ONLY
+  triggerKeywords         String   @default("") @db.Text
+  triggerCondition        String   @default("") @db.Text
+  funnelObjectives        String?  @db.Text
+  salesStrategies         String?  @db.Text
+  qualificationCriteria   String?  @db.Text
+  disqualificationCriteria String? @db.Text
+  stopConditions          String?  @db.Text
+  sdrMode                 String   @default("ADVANCED") // ADVANCED (Cognitive Funnel) or SIMPLE (Strict Qualification Flow)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  leads                   Lead[]
+}
+
+model Lead {
+  id                String             @id @default(uuid())
+  tenantId          String
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sdrConfigId       String?
+  sdrConfig         SDRConfig?         @relation(fields: [sdrConfigId], references: [id], onDelete: Cascade)
+  phone             String
+  name              String?
+  email             String?
+  status            String             @default("NEW") // e.g., NEW, ACTIVE, QUALIFIED, DISQUALIFIED, HANDOFF, UNRESPONSIVE
+  tags              String[]           @default([])
+  customFields      Json?              @default("{}")
+  notes             String?            @db.Text
+  botPaused         Boolean            @default(false)
+  followUpCount     Int                @default(0)
+  lastFollowUpAt    DateTime?
+  lastInteractionAt DateTime           @default(now())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  messages          Message[]
+  memories          LeadMemory[]
+  strategyState     LeadStrategyState?
+  flowExecutions    FlowExecution[]
+
+  @@unique([tenantId, phone]) // A lead is unique per tenant by phone number
+}
+
+model OutboundCampaign {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  phone        String
+  name         String?
+  message      String   @db.Text
+  status       String   @default("SENT") // SENT, FAILED, DELIVERED, REPLIED
+  source       String   @default("MANUAL") // MANUAL, API, CSV
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+model LeadStrategyState {
+  id               String   @id @default(uuid())
+  leadId           String   @unique
+  lead             Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currentObjective String   @db.Text
+  currentStrategy  String   @db.Text
+  updatedAt        DateTime @updatedAt
+}
+
+model LeadMemory {
+  id         String   @id @default(uuid())
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  fact       String   @db.Text
+  confidence Float    @default(1.0)
+  embedding  Unsupported("vector(3072)")?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  sender    String   // e.g., "LEAD", "SDR", "SYSTEM"
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model KnowledgeSource {
+  id        String           @id @default(uuid())
+  tenantId  String
+  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  title     String
+  type      String           // e.g., "PDF", "PLAYBOOK", "FAQ"
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  chunks    KnowledgeChunk[]
+}
+
+model KnowledgeChunk {
+  id         String          @id @default(uuid())
+  sourceId   String
+  source     KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  content    String          @db.Text
+  // pgvector embedding: 3072 dimensions for gemini-embedding-001
+  embedding  Unsupported("vector(3072)")?
+  createdAt  DateTime        @default(now())
+}
+
+model HumanCorrection {
+  id                String   @id @default(uuid())
+  tenantId          String
+  leadId            String?
+  errorContext      String   @db.Text
+  originalResponse  String   @db.Text
+  correctedResponse String   @db.Text
+  feedbackText      String   @db.Text
+  embedding         Unsupported("vector(3072)")?
+  createdAt         DateTime @default(now())
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  tenantId  String
+  leadId    String?
+  eventType String   // e.g., "message_received", "message_sent", "objective_reached", "strategy_updated"
+  objective String?
+  strategy  String?
+  metadata  String?  @db.Text // JSON stringified data
+  createdAt DateTime @default(now())
+}
+
+model MediaAsset {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  triggerValue String   // Ex: "decorado_video", "ranger_fotos"
+  mediaType    String   // "image" ou "video"
+  mediaUrl     String
+  caption      String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Flow {
+  id           String          @id @default(uuid())
+  tenantId     String
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  isActive     Boolean         @default(false)
+  trigger      String          @default("manual") // inbound_new_lead, keyword, manual, scheduled
+  triggerValue String?         // keyword or cron expression
+  nodes        String          @db.Text // JSON of nodes and edges (Drawflow export)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  executions   FlowExecution[]
+}
+
+model FlowExecution {
+  id            String   @id @default(uuid())
+  flowId        String
+  flow          Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  leadId        String
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currentNodeId String
+  status        String   @default("RUNNING") // RUNNING, COMPLETED, PAUSED, FAILED
+  variables     String?  @db.Text // JSON with extracted variables
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TrainingSession {
+  id        String   @id @default(uuid())
+  tenantId  String
+  type      String   // "manual_qa", "document", "transcript"
+  title     String
+  content   String   @db.Text
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AgentReflection {
+  id         String   @id @default(uuid())
+  tenantId   String
+  leadId     String
+  summary    String   @db.Text
+  insights   String   @db.Text // JSON with extracted patterns
+  createdAt  DateTime @default(now())
+}
+
+model AITrace {
+  id               String   @id @default(uuid())
+  tenantId         String
+  leadId           String?
+  phone            String
+  inputMessage     String   @db.Text
+  memoriesFound    String[] @default([])
+  knowledgeChunks  String[] @default([])
+  currentObjective String   @db.Text
+  nextObjective    String   @db.Text
+  objectiveReason  String   @db.Text
+  currentStrategy  String   @db.Text
+  nextStrategy     String   @db.Text
+  strategyReason   String   @db.Text
+  leadStatusBefore String   @default("NEW")
+  leadStatusAfter  String   @default("NEW")
+  fewShotUsed      String?  @db.Text
+  generatedPrompt  String?  @db.Text
+  finalResponse    String   @db.Text
+  createdAt        DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+model SystemSetting {
+  id           String   @id @default("global")
+  aiProvider   String   @default("GEMINI") // "GEMINI" | "OPENAI"
+  openaiApiKey String?  @db.Text
+  openaiModel  String   @default("gpt-4o-mini")
+  geminiApiKey String?  @db.Text
+  geminiModel  String   @default("gemini-2.5-flash")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+

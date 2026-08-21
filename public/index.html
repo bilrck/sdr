@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDR Inteligente — SaaS de Vendas com IA</title>
+  <meta name="description" content="Seu vendedor de IA que aprende, evolui e fecha negócios automaticamente no WhatsApp. Configure fluxos, treine o agente e acompanhe resultados em tempo real.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+</head>
+<body>
+
+<!-- ============================================================
+     AUTH SCREEN
+============================================================ -->
+<div id="auth-screen" class="auth-screen">
+
+  <!-- Left: Branding Panel -->
+  <div class="auth-left">
+    <div class="auth-blob auth-blob-1"></div>
+    <div class="auth-blob auth-blob-2"></div>
+    <div class="auth-blob auth-blob-3"></div>
+
+    <div class="auth-brand">
+      <div class="auth-logo">
+        <div class="auth-logo-icon"><i class="fa-solid fa-robot"></i></div>
+        <span class="auth-logo-text">SDR <span class="accent">Inteligente</span></span>
+      </div>
+
+      <h1 class="auth-headline">
+        Seu SDR de IA que nunca para de aprender
+      </h1>
+      <p class="auth-subheadline">
+        Qualifique leads, feche negócios e treine seu agente com cada conversa.<br>
+        Funciona 24/7 no WhatsApp.
+      </p>
+
+      <ul class="auth-features">
+        <li><span class="feat-icon">✨</span><span>Autoaprendizado contínuo por Inteligência Artificial</span></li>
+        <li><span class="feat-icon">🔀</span><span>Fluxos visuais de atendimento personalizados</span></li>
+        <li><span class="feat-icon">🧠</span><span>Memória permanente de cada lead</span></li>
+        <li><span class="feat-icon">📊</span><span>Analytics de vendas em tempo real</span></li>
+        <li><span class="feat-icon">🎬</span><span>Envio automático de imagens e vídeos</span></li>
+        <li><span class="feat-icon">🔗</span><span>Integrações com CRM, Webhooks e Planilhas</span></li>
+      </ul>
+
+      <div class="auth-stats-row">
+        <div class="auth-stat">
+          <strong>10K+</strong><span>Leads atendidos</span>
+        </div>
+        <div class="auth-stat-divider"></div>
+        <div class="auth-stat">
+          <strong>98%</strong><span>Taxa de resposta</span>
+        </div>
+        <div class="auth-stat-divider"></div>
+        <div class="auth-stat">
+          <strong>3×</strong><span>Mais qualificações</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Form Panel -->
+  <div class="auth-right">
+
+    <!-- LOGIN PANEL -->
+    <div id="login-panel" class="auth-panel">
+      <div class="auth-panel-header">
+        <h2>Bem-vindo de volta 👋</h2>
+        <p>Entre na sua conta para acessar o painel</p>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <div class="auth-field">
+          <label for="login-email"><i class="fa-solid fa-envelope"></i> E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="login-password"><i class="fa-solid fa-lock"></i> Senha</label>
+          <div class="password-wrapper">
+            <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="auth-error" style="display:none;"></div>
+
+        <button type="submit" id="login-btn" class="btn-auth">
+          <span>Entrar</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>ou</span></div>
+
+      <p class="auth-switch">
+        Não tem conta?
+        <button type="button" class="link-btn" onclick="showPanel('register')">Criar conta grátis →</button>
+      </p>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div id="register-panel" class="auth-panel" style="display:none;">
+      <div class="auth-panel-header">
+        <h2>Criar sua conta 🚀</h2>
+        <p>Configure seu SDR de IA em menos de 2 minutos</p>
+      </div>
+
+      <form id="register-form" class="auth-form">
+        <div class="auth-field">
+          <label for="register-name"><i class="fa-solid fa-user"></i> Nome completo</label>
+          <input type="text" id="register-name" placeholder="Seu nome" required autocomplete="name">
+        </div>
+        <div class="auth-field">
+          <label for="register-email"><i class="fa-solid fa-envelope"></i> E-mail</label>
+          <input type="email" id="register-email" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="auth-field">
+          <label for="register-password"><i class="fa-solid fa-lock"></i> Senha</label>
+          <div class="password-wrapper">
+            <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+            <button type="button" class="toggle-password" onclick="togglePassword('register-password', this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="register-error" class="auth-error" style="display:none;"></div>
+
+        <button type="submit" id="register-btn" class="btn-auth">
+          <span>Criar conta</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>ou</span></div>
+
+      <p class="auth-switch">
+        Já tem conta?
+        <button type="button" class="link-btn" onclick="showPanel('login')">← Fazer login</button>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP
+============================================================ -->
+<div id="app" class="app" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon-wrap"><i class="fa-solid fa-robot"></i></div>
+        <span class="logo-text">SDR <em>IA</em></span>
+      </div>
+      <button id="toggle-sidebar" class="toggle-btn" title="Recolher menu">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-section-label">Principal</span>
+        <button class="nav-item active" data-page="home">
+          <i class="fa-solid fa-house-chimney"></i>
+          <span class="nav-label">Início</span>
+        </button>
+        <button class="nav-item" data-page="agent">
+          <i class="fa-solid fa-robot"></i>
+          <span class="nav-label">Meu Agente</span>
+        </button>
+        <button class="nav-item" data-page="followup">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span class="nav-label">Follow-up</span>
+        </button>
+        <button class="nav-item" data-page="flows">
+          <i class="fa-solid fa-diagram-project"></i>
+          <span class="nav-label">Fluxos</span>
+          <span class="nav-soon">Em breve</span>
+        </button>
+        <button class="nav-item" data-page="training">
+          <i class="fa-solid fa-brain"></i>
+          <span class="nav-label">Treinamento</span>
+        </button>
+        <button class="nav-item" data-page="ai-logic">
+          <i class="fa-solid fa-network-wired"></i>
+          <span class="nav-label">Raciocínio da IA</span>
+          <span class="nav-badge" style="background:rgba(99,102,241,0.2); color:#818cf8; font-size:10px;">Lógica</span>
+        </button>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-section">
+        <span class="nav-section-label">Operações</span>
+        <button class="nav-item" data-page="outbound">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span class="nav-label">Disparos</span>
+        </button>
+        <button class="nav-item" data-page="leads">
+          <i class="fa-solid fa-users"></i>
+          <span class="nav-label">Leads & Contatos</span>
+          <span class="nav-badge" id="nav-leads-badge" style="display:none;">0</span>
+        </button>
+        <button class="nav-item" data-page="conversations">
+          <i class="fa-solid fa-comments"></i>
+          <span class="nav-label">Conversas</span>
+          <span class="nav-badge" id="nav-active-badge" style="display:none;">0</span>
+        </button>
+        <button class="nav-item" data-page="media">
+          <i class="fa-solid fa-photo-film"></i>
+          <span class="nav-label">Mídias</span>
+        </button>
+        <button class="nav-item" data-page="analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span class="nav-label">Analytics</span>
+        </button>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-section">
+        <button class="nav-item" data-page="settings">
+          <i class="fa-solid fa-gear"></i>
+          <span class="nav-label">Configurações</span>
+        </button>
+        <button id="nav-admin" class="nav-item" data-page="admin" style="display:none;">
+          <i class="fa-solid fa-crown" style="color:var(--warning);"></i>
+          <span class="nav-label">Admin Global</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar-wrap">
+        <div class="user-avatar" id="sidebar-avatar">U</div>
+      </div>
+      <div class="user-info" id="sidebar-user-info">
+        <span class="user-name" id="sidebar-user-name">Carregando...</span>
+        <span class="user-email" id="sidebar-user-email">...</span>
+      </div>
+      <button class="btn-logout" id="btn-logout" title="Sair da conta">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-wrap">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="topbar-title">Início</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="tenant-control">
+          <i class="fa-solid fa-building-columns"></i>
+          <select id="tenant-select" class="tenant-select"></select>
+          <button id="btn-new-tenant" class="btn-icon-sm" title="Nova empresa">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+        <!-- Theme Switcher Button / Dropdown -->
+        <div class="theme-switcher" id="theme-switcher">
+          <button class="btn-theme-toggle" id="btn-theme-toggle" onclick="toggleThemeDropdown(event)" title="Alternar Tema (Claro / Escuro / Sistema)">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+            <span class="theme-label" id="theme-label">Escuro</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:4px; opacity:0.7;"></i>
+          </button>
+          <div class="theme-dropdown glass" id="theme-dropdown" style="display:none;">
+            <button type="button" class="theme-dropdown-item" onclick="setAppTheme('light')">
+              <i class="fa-solid fa-sun" style="color:#f59e0b;"></i> Claro
+            </button>
+            <button type="button" class="theme-dropdown-item" onclick="setAppTheme('dark')">
+              <i class="fa-solid fa-moon" style="color:#818cf8;"></i> Escuro
+            </button>
+            <button type="button" class="theme-dropdown-item" onclick="setAppTheme('system')">
+              <i class="fa-solid fa-desktop" style="color:#38bdf8;"></i> Sistema (Auto)
+            </button>
+          </div>
+        </div>
+        <!-- Real-time WhatsApp Status Pill (Single Instance per Company) -->
+        <div class="wp-topbar-pill glass" id="topbar-wp-pill" onclick="handleTopbarWpClick()" title="Status do WhatsApp desta Empresa (Clique para conectar/gerenciar)">
+          <i class="fa-brands fa-whatsapp" style="color:var(--success); font-size:13px;"></i>
+          <span class="wp-dot" id="topbar-wp-dot"></span>
+          <span class="wp-label" id="topbar-wp-label">Verificando...</span>
+        </div>
+        <div class="online-pill">
+          <span class="online-dot"></span>
+          <span>Online</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <main class="content-area">
+
+      <!-- ======================== PAGE: HOME ======================== -->
+      <section id="page-home" class="page active">
+
+        <div class="home-hero">
+          <div class="home-hero-text">
+            <h2>Olá, <span id="home-user-name">Usuário</span>! 👋</h2>
+            <p>Aqui está o resumo do seu SDR hoje. Tudo funcionando e aprendendo.</p>
+          </div>
+          <div class="home-hero-actions">
+            <button class="btn-accent" onclick="navigate('conversations')">
+              <i class="fa-solid fa-comments"></i> Ver Conversas
+            </button>
+            <button class="btn-secondary-outline" onclick="navigate('training')">
+              <i class="fa-solid fa-brain"></i> Treinar SDR
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <div class="stat-card glass">
+            <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-body">
+              <span class="stat-value" id="home-total-leads">–</span>
+              <span class="stat-label">Total de Leads</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-body">
+              <span class="stat-value" id="home-qualified">–</span>
+              <span class="stat-label">Qualificados</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon purple"><i class="fa-solid fa-bolt"></i></div>
+            <div class="stat-body">
+              <span class="stat-value" id="home-interactions">–</span>
+              <span class="stat-label">Interações Totais</span>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon orange"><i class="fa-solid fa-brain"></i></div>
+            <div class="stat-body">
+              <span class="stat-value" id="home-trainings">–</span>
+              <span class="stat-label">Playbooks Treinados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SDR Agent Card + Learning Progress -->
+        <div class="home-two-col">
+          <!-- SDR Card -->
+          <div class="glass sdr-card">
+            <div class="sdr-card-header">
+              <div class="sdr-avatar-big"><i class="fa-solid fa-robot"></i></div>
+              <div>
+                <h3 id="home-sdr-name">Seu Agente SDR</h3>
+                <span id="home-sdr-role" class="text-muted">Configure seu agente →</span>
+                <div class="sdr-status-badge">
+                  <span class="dot green"></span> Ativo e aprendendo
+                </div>
+              </div>
+            </div>
+            <div class="sdr-mini-stats">
+              <div>
+                <strong id="home-sdr-words">40</strong>
+                <span>palavras/resposta</span>
+              </div>
+              <div>
+                <strong id="home-sdr-bubbles">3</strong>
+                <span>balões máx.</span>
+              </div>
+              <div>
+                <strong id="home-sdr-corrections">0</strong>
+                <span>correções aprendidas</span>
+              </div>
+            </div>
+            <button class="btn-outline-full" onclick="navigate('agent')">
+              <i class="fa-solid fa-sliders"></i> Configurar Agente
+            </button>
+          </div>
+
+          <!-- Learning Progress -->
+          <div class="glass learning-card">
+            <h3><i class="fa-solid fa-graduation-cap"></i> Maturidade do SDR</h3>
+            <p class="text-muted" style="font-size:13px; margin-bottom:16px;">Baseado em playbooks, correções e conversas processadas.</p>
+
+            <div class="maturity-bar-wrap">
+              <div class="maturity-labels">
+                <span>Iniciante</span>
+                <span id="home-maturity-label">Calculando...</span>
+                <span>Expert</span>
+              </div>
+              <div class="maturity-track">
+                <div class="maturity-fill" id="home-maturity-fill" style="width: 0%"></div>
+              </div>
+              <span class="maturity-percent" id="home-maturity-pct">0%</span>
+            </div>
+
+            <div class="maturity-breakdown">
+              <div class="breakdown-item">
+                <i class="fa-solid fa-book-open" style="color:var(--accent)"></i>
+                <span id="home-chunk-count">0</span> chunks de conhecimento
+              </div>
+              <div class="breakdown-item">
+                <i class="fa-solid fa-user-pen" style="color:var(--warning)"></i>
+                <span id="home-correction-count">0</span> correções humanas
+              </div>
+              <div class="breakdown-item">
+                <i class="fa-solid fa-comments" style="color:var(--success)"></i>
+                <span id="home-convo-count">0</span> conversas processadas
+              </div>
+            </div>
+
+            <button class="btn-outline-full" onclick="navigate('training')" style="margin-top:16px;">
+              <i class="fa-solid fa-brain"></i> Ir para Treinamento
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: AGENT ======================== -->
+      <section id="page-agent" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2>Configuração do Agente SDR</h2>
+            <p>Defina a persona, o comportamento e os limites do seu vendedor de IA.</p>
+          </div>
+        </div>
+
+        <!-- Empty State (No Agent configured) -->
+        <div id="agent-empty-state" class="glass form-card" style="display:none; text-align:center; padding:60px 20px; margin-bottom:24px;">
+          <div style="font-size:52px; color:var(--accent); margin-bottom:16px;"><i class="fa-solid fa-robot"></i></div>
+          <h3 style="font-size:22px; margin-bottom:8px;">Nenhum Agente SDR Ativo nesta Empresa</h3>
+          <p class="text-muted" style="max-width:520px; margin:0 auto 24px auto; font-size:14px; line-height:1.5;">
+            Esta empresa ainda não possui um vendedor de Inteligência Artificial configurado. Crie sua primeira persona de vendas agora para atender leads automaticamente no WhatsApp.
+          </p>
+          <button type="button" class="btn-accent" onclick="showAgentForm()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Criar e Configurar Agente SDR
+          </button>
+        </div>
+
+        <div id="agent-form-container" class="config-grid glass">
+          <form id="sdr-config-form">
+
+            <div class="config-section-title">
+              <i class="fa-solid fa-sliders"></i> Modo de Operação da Inteligência Artificial
+            </div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:14px;">
+              Selecione se o agente deve conduzir um funil cognitivo completo ou realizar apenas uma qualificação direta e parar ao concluir.
+            </p>
+
+            <div class="sdr-mode-selector-grid" style="margin-bottom:24px;">
+              <label class="sdr-mode-card active" id="agent-mode-card-advanced">
+                <input type="radio" name="sdr-mode" id="sdr-mode-advanced" value="ADVANCED" onchange="setSDRMode(this.value, true)" checked>
+                <div class="mode-card-content">
+                  <div class="mode-card-header">
+                    <span class="mode-badge pro"><i class="fa-solid fa-brain"></i> Modo Avançado</span>
+                    <i class="fa-solid fa-circle-check check-icon"></i>
+                  </div>
+                  <h4>SDR Cognitivo & Funil Completo</h4>
+                  <p>Opera com as 6 camadas: fases do funil, táticas comportamentais, busca vetorial no Playbook (RAG), quebra de objeções e memória contínua.</p>
+                </div>
+              </label>
+
+              <label class="sdr-mode-card" id="agent-mode-card-simple">
+                <input type="radio" name="sdr-mode" id="sdr-mode-simple" value="SIMPLE" onchange="setSDRMode(this.value, true)">
+                <div class="mode-card-content">
+                  <div class="mode-card-header">
+                    <span class="mode-badge simple"><i class="fa-solid fa-bolt"></i> Modo Simples</span>
+                    <i class="fa-solid fa-circle-check check-icon"></i>
+                  </div>
+                  <h4>SDR de Qualificação Direta</h4>
+                  <p>Segue estritamente as perguntas do Fluxo de Qualificação. Ao coletar tudo, marca o lead como <strong>Qualificado</strong> e <strong>não responde mais</strong>.</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="config-section-title">
+              <i class="fa-solid fa-masks-theater"></i> Identidade da Persona
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="sdr-name"><i class="fa-solid fa-signature"></i> Nome do SDR (Interno)</label>
+                <input type="text" id="sdr-name" required placeholder="Ex: Lucas - Corretor Prime">
+              </div>
+              <div class="form-group">
+                <label for="sdr-instance"><i class="fa-brands fa-whatsapp"></i> Instância WhatsApp (Evolution API)</label>
+                <input type="text" id="sdr-instance" placeholder="Ex: sdr-instance">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="sdr-persona-name"><i class="fa-solid fa-user-tie"></i> Nome da Persona (Lead vê)</label>
+                <input type="text" id="sdr-persona-name" required placeholder="Ex: Lucas">
+              </div>
+              <div class="form-group">
+                <label for="sdr-persona-role"><i class="fa-solid fa-briefcase"></i> Cargo da Persona</label>
+                <input type="text" id="sdr-persona-role" required placeholder="Ex: Consultor Imobiliário">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="sdr-personality"><i class="fa-solid fa-comment-dots"></i> Personalidade e Tom de Voz</label>
+              <textarea id="sdr-personality" required rows="4" placeholder="Descreva o estilo: informal, uso de emojis, empático, direto ao ponto..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="sdr-base-instructions"><i class="fa-solid fa-clipboard-list"></i> Diretrizes e Regras de Negócio</label>
+              <textarea id="sdr-base-instructions" required rows="5" placeholder="Regras cruciais: ofertas especiais, o que fazer ou evitar, links importantes..."></textarea>
+            </div>
+
+            <div class="config-section-title" style="margin-top:28px;">
+              <i class="fa-solid fa-sliders"></i> Comportamento de Resposta
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="sdr-max-words"><i class="fa-solid fa-text-width"></i> Limite de Palavras</label>
+                <input type="number" id="sdr-max-words" min="10" max="250" placeholder="40">
+                <span class="field-hint">Palavras por resposta (limite suave)</span>
+              </div>
+              <div class="form-group">
+                <label for="sdr-max-bubbles"><i class="fa-solid fa-layer-group"></i> Máx. de Balões</label>
+                <select id="sdr-max-bubbles">
+                  <option value="1">1 Balão</option>
+                  <option value="2">2 Balões</option>
+                  <option value="3" selected>3 Balões</option>
+                  <option value="4">4 Balões</option>
+                  <option value="5">5 Balões</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="sdr-split-messages"><i class="fa-solid fa-scissors"></i> Quebrar Mensagens</label>
+                <select id="sdr-split-messages">
+                  <option value="true">Sim — múltiplos balões</option>
+                  <option value="false">Não — balão único</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-section-title" style="margin-top:28px;">
+              <i class="fa-solid fa-filter-circle-dollar"></i> Qualificação e Integrações
+            </div>
+
+            <div class="form-group">
+              <label for="sdr-qualification-flow"><i class="fa-solid fa-clipboard-question"></i> Fluxo de Qualificação</label>
+              <textarea id="sdr-qualification-flow" rows="3" placeholder="Ex: Perguntar nome, telefone de contato, tamanho do imóvel desejado e orçamento disponível."></textarea>
+              <span class="field-hint">O SDR coletará essas informações de forma natural na conversa.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="sdr-post-qualification-action"><i class="fa-solid fa-circle-check"></i> Ação Pós-Qualificação</label>
+              <textarea id="sdr-post-qualification-action" rows="2" placeholder="Ex: Enviar link de agendamento e transferir para consultor humano."></textarea>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="sdr-webhook-url"><i class="fa-solid fa-link"></i> URL de Webhook</label>
+                <input type="url" id="sdr-webhook-url" placeholder="https://api.seucrm.com/webhook">
+                <span class="field-hint">Recebe um POST com dados do lead ao qualificar.</span>
+              </div>
+              <div class="form-group">
+                <label for="sdr-spreadsheet-enabled"><i class="fa-solid fa-file-excel"></i> Integração de Planilha</label>
+                <select id="sdr-spreadsheet-enabled">
+                  <option value="false">Desativado</option>
+                  <option value="true">Ativado (Google Sheets / CRM)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-section-title" style="margin-top:28px;">
+              <i class="fa-solid fa-filter"></i> Filtragem & Gatilhos de Atendimento
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="sdr-filter-enabled"><i class="fa-solid fa-power-off"></i> Ativar Filtragem de Atendimento</label>
+                <select id="sdr-filter-enabled" onchange="toggleFilterFields(this.value)">
+                  <option value="false">Desativado (Responder a todos normalmente)</option>
+                  <option value="true">Ativado (Aplicar regras e gatilhos de resposta)</option>
+                </select>
+                <span class="field-hint">Quando ativado, o SDR só responde a leads que atendam ao critério escolhido.</span>
+              </div>
+              <div class="form-group" id="group-trigger-type">
+                <label for="sdr-trigger-type"><i class="fa-solid fa-bolt"></i> Tipo de Gatilho / Condição</label>
+                <select id="sdr-trigger-type" onchange="updateTriggerFieldsView(this.value)">
+                  <option value="ALL">Todos (Responde a qualquer contato)</option>
+                  <option value="KEYWORD">Palavra-chave / Mensagem Específica</option>
+                  <option value="TAG_MATCH">Leads com Tags Específicas</option>
+                  <option value="NEW_ONLY">Apenas Novos Contatos (Sem histórico prévio)</option>
+                </select>
+                <span class="field-hint">Defina a regra que ativa a resposta automática da IA.</span>
+              </div>
+            </div>
+
+            <div class="form-group" id="group-trigger-keywords" style="display:none;">
+              <label for="sdr-trigger-keywords"><i class="fa-solid fa-key"></i> Palavras-chave de Disparo (separadas por vírgula)</label>
+              <textarea id="sdr-trigger-keywords" rows="2" placeholder="Ex: quero comprar, preço, catálogo, proposta, informações, agendamento"></textarea>
+              <span class="field-hint">O agente só responderá se a mensagem recebida contiver pelo menos um destes termos.</span>
+            </div>
+
+            <div class="form-group" id="group-trigger-condition" style="display:none;">
+              <label for="sdr-trigger-condition"><i class="fa-solid fa-tags"></i> Tags de Leads Requeridas (separadas por vírgula)</label>
+              <input type="text" id="sdr-trigger-condition" placeholder="Ex: VIP, Quente, Test-Drive, Proposta">
+              <span class="field-hint">O agente só responderá se o lead já possuir pelo menos uma destas tags cadastradas.</span>
+            </div>
+
+            <!-- Cognitive Funnel Section (Active in Advanced Mode) -->
+            <div id="section-funnel-cognitive">
+              <div class="config-section-title" style="margin-top:28px;">
+                <i class="fa-solid fa-brain"></i> Fases do Funil & Estratégias Cognitivas da IA
+              </div>
+              <p class="text-muted" style="font-size:13px; margin-bottom:12px;">
+                Defina as etapas que a IA deve perseguir durante a negociação e as estratégias comportamentais permitidas. Totalmente customizável para o seu nicho.
+              </p>
+
+              <div class="niche-templates-bar">
+                <span class="template-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Modelos Prontos por Nicho:</span>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('automotive')">
+                  <i class="fa-solid fa-car"></i> Veículos / Concessionária
+                </button>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('realestate')">
+                  <i class="fa-solid fa-building"></i> Imobiliário
+                </button>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('saas')">
+                  <i class="fa-solid fa-laptop-code"></i> SaaS / Software B2B
+                </button>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('clinic')">
+                  <i class="fa-solid fa-heart-pulse"></i> Clínicas & Saúde
+                </button>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('consulting')">
+                  <i class="fa-solid fa-briefcase"></i> Serviços & Consultoria
+                </button>
+                <button type="button" class="btn-niche-template" onclick="applyNicheCognitiveTemplate('universal')">
+                  <i class="fa-solid fa-rotate-left"></i> Padrão Universal
+                </button>
+              </div>
+
+              <div class="form-row-2" style="margin-top:14px;">
+                <div class="form-group">
+                  <label for="sdr-funnel-objectives"><i class="fa-solid fa-bullseye"></i> Fases e Missões do Funil Comercial (uma por linha)</label>
+                  <textarea id="sdr-funnel-objectives" rows="7" placeholder="1. Acolher o lead e descobrir o modelo de veículo de interesse&#10;2. Descobrir se possui veículo usado para troca&#10;3. Alinhar capacidade de entrada e financiamento&#10;4. Agendar test-drive presencial"></textarea>
+                  <span class="field-hint">A IA avalia se a fase atual foi cumprida antes de avançar para a próxima etapa da venda.</span>
+                </div>
+                <div class="form-group">
+                  <label for="sdr-sales-strategies"><i class="fa-solid fa-chess"></i> Táticas & Estratégias Comportamentais Permitidas (uma por linha)</label>
+                  <textarea id="sdr-sales-strategies" rows="7" placeholder="Rapport inicial (empatia, quebrar o gelo)&#10;Exploração de dores e necessidades&#10;Proposição de valor dos modelos&#10;Educação do Lead (taxas, opcionais, prazos)&#10;Contorno de Objeções&#10;Chamada para Ação / CTA (agendar visita)"></textarea>
+                  <span class="field-hint">Define quais abordagens e tons psicológicos a IA pode adotar na conversa.</span>
+                </div>
+              </div>
+
+              <!-- Status Transition Criteria & Stop Conditions -->
+              <div class="config-section-title" style="margin-top:28px;">
+                <i class="fa-solid fa-traffic-light"></i> Critérios de Transição de Status & Condições de Parada
+              </div>
+              <p class="text-muted" style="font-size:13px; margin-bottom:14px;">
+                Instrua detalhadamente ao Agente Inteligente quando ele deve classificar o lead em cada status e em quais situações ele deve <strong>parar de responder</strong> e transferir o atendimento para a equipe humana.
+              </p>
+
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label for="sdr-when-qualified" style="color:var(--success);">
+                    <i class="fa-solid fa-circle-check"></i> Quando Definir como QUALIFICADO
+                  </label>
+                  <textarea id="sdr-when-qualified" rows="5" placeholder="Ex: Quando o lead informar interesse concreto, comprovar orçamento/renda mínima para o projeto e concordar em receber contato de um consultor ou agendar reunião/visita."></textarea>
+                  <span class="field-hint">Momento de sucesso comercial (Status: <strong>QUALIFIED</strong>).</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="sdr-when-disqualified" style="color:var(--danger);">
+                    <i class="fa-solid fa-circle-xmark"></i> Quando Definir como DESQUALIFICADO
+                  </label>
+                  <textarea id="sdr-when-disqualified" rows="5" placeholder="Ex: Lead sem orçamento mínimo, fora da região de atendimento, concorrente fazendo pesquisa, menor de idade ou que declare não ter interesse algum."></textarea>
+                  <span class="field-hint">Quando o lead não tem perfil para a venda (Status: <strong>DISQUALIFIED</strong>).</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="sdr-stop-conditions" style="color:var(--warning);">
+                    <i class="fa-solid fa-hand"></i> Condições para Parar de Responder (Handoff)
+                  </label>
+                  <textarea id="sdr-stop-conditions" rows="5" placeholder="Ex: Quando o lead pedir para falar com atendente/humano/gerente, demonstrar irritação extrema, solicitar suporte pós-venda ou quando o negócio já tiver sido concluído."></textarea>
+                  <span class="field-hint">A IA pausa as respostas automáticas e transfere para humanos (Status: <strong>HANDOFF</strong>).</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Banner displayed when Simple Mode is active -->
+            <div id="simple-mode-banner" class="glass" style="display:none; margin-top:20px; padding:16px 20px; border-left:4px solid var(--accent); border-radius:var(--radius-sm);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <i class="fa-solid fa-bolt" style="font-size:22px; color:var(--accent);"></i>
+                <div>
+                  <h4 style="margin:0 0 2px 0; color:var(--text-1);">Modo SDR Simples Ativado</h4>
+                  <p class="text-muted" style="margin:0; font-size:12px;">
+                    O agente fará estritamente as perguntas do <strong>Fluxo de Qualificação</strong>. Ao coletar todos os dados necessários, o status do lead mudará para <strong>QUALIFIED</strong> e o robô encerrará o atendimento automático.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-accent">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: FOLLOW-UP ======================== -->
+      <section id="page-followup" class="page">
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-clock-rotate-left"></i> Motor de Follow-up Inteligente</h2>
+            <p>Reengaje leads que pararam de responder com mensagens personalizadas e proteção anti-conflito em tempo real.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-outline" onclick="runFollowUpScan(true)" id="btn-run-followup">
+              <i class="fa-solid fa-play"></i> Executar Varredura Agora
+            </button>
+            <button type="button" class="btn-accent" onclick="saveFollowUpConfig(event)">
+              <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações
+            </button>
+          </div>
+        </div>
+
+        <!-- Follow-up Status Banner -->
+        <div class="glass-card" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-left: 4px solid var(--accent);">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:44px; height:44px; border-radius:12px; background:rgba(99,102,241,0.15); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:20px;">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </div>
+            <div>
+              <h4 style="margin:0; font-size:16px;">Status do Follow-up Automático</h4>
+              <p style="margin:4px 0 0; font-size:13px; color:var(--text-secondary);">Quando ativado, o sistema monitora leads sem resposta e envia abordagens no momento exato.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="followup-enabled-toggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Followup Mode Awareness Banner -->
+        <div class="glass-card" style="margin-bottom: 24px; background: rgba(56, 189, 248, 0.04); border-color: rgba(56, 189, 248, 0.2);">
+          <div style="display:flex; align-items:flex-start; gap:14px;">
+            <i class="fa-solid fa-shield-halved" style="color:var(--info); font-size:22px; margin-top:2px;"></i>
+            <div>
+              <h4 style="margin:0 0 6px; font-size:15px; color:var(--text-primary);">Proteção Anti-Conflito & Consciência de Modo</h4>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:10px; font-size:13px; color:var(--text-secondary);">
+                <div style="padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                  <strong style="color:var(--accent);">⚡ Modo Simples Ativo:</strong> Relembra estritamente a pergunta pendente do Fluxo de Qualificação sem inventar assuntos e sem queimar etapas.
+                </div>
+                <div style="padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                  <strong style="color:var(--success);">🧠 Modo Avançado Ativo:</strong> Mantém o objetivo ativo do funil e quebra o silêncio com abordagem consultiva e elegante.
+                </div>
+                <div style="padding:10px 14px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                  <strong style="color:var(--warning);">🛡️ Regra Anti-Conflito:</strong> Leads qualificados, desqualificados, em handoff humano ou com mensagem recente (<15m) NUNCA são interrompidos.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form id="form-followup-settings" onsubmit="saveFollowUpConfig(event)">
+          <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+
+            <!-- CARD 1: QUANDO AGIR -->
+            <div class="glass-card">
+              <div class="card-header" style="margin-bottom:16px;">
+                <div class="card-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                <div>
+                  <h3>Quando Agir (Gatilhos de Tempo)</h3>
+                  <p>Defina o tempo de inatividade e os horários permitidos para envio.</p>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:14px;">
+                <label for="followup-delay-hours"><i class="fa-solid fa-hourglass-half"></i> Tempo de Espera sem Resposta</label>
+                <select id="followup-delay-hours" class="form-select">
+                  <option value="1">1 hora de inatividade</option>
+                  <option value="2" selected>2 horas de inatividade (Recomendado)</option>
+                  <option value="4">4 horas de inatividade</option>
+                  <option value="8">8 horas de inatividade</option>
+                  <option value="12">12 horas de inatividade</option>
+                  <option value="24">24 horas (1 dia)</option>
+                  <option value="48">48 horas (2 dias)</option>
+                </select>
+                <span class="field-hint">A IA só abordará o lead após este período completo de silêncio.</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div class="form-group">
+                  <label for="followup-hours-start"><i class="fa-solid fa-sun"></i> Início Atendimento</label>
+                  <input type="time" id="followup-hours-start" value="08:00" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label for="followup-hours-end"><i class="fa-solid fa-moon"></i> Fim Atendimento</label>
+                  <input type="time" id="followup-hours-end" value="18:00" class="form-input">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="followup-days"><i class="fa-solid fa-calendar-days"></i> Dias de Atuação</label>
+                <select id="followup-days" class="form-select">
+                  <option value="1,2,3,4,5" selected>Segunda a Sexta (Horário Comercial)</option>
+                  <option value="1,2,3,4,5,6">Segunda a Sábado</option>
+                  <option value="1,2,3,4,5,6,7">Todos os dias (Inclusive Domingo)</option>
+                </select>
+                <span class="field-hint">Fora dessa janela, os follow-ups são adiados automaticamente para o próximo dia útil.</span>
+              </div>
+            </div>
+
+            <!-- CARD 2: LIMITE DE TENTATIVAS -->
+            <div class="glass-card">
+              <div class="card-header" style="margin-bottom:16px;">
+                <div class="card-icon"><i class="fa-solid fa-bullseye"></i></div>
+                <div>
+                  <h3>Limite de Tentativas & Ação Final</h3>
+                  <p>Controle a cadência máxima para não sobrecarregar o contato.</p>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:14px;">
+                <label for="followup-max-attempts"><i class="fa-solid fa-arrow-rotate-right"></i> Limite Máximo de Tentativas</label>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <input type="number" id="followup-max-attempts" min="1" max="10" value="3" class="form-input" style="max-width:120px;">
+                  <span style="font-size:13px; color:var(--text-secondary);">tentativas de reengajamento por lead</span>
+                </div>
+                <span class="field-hint">Se o lead responder em qualquer tentativa, o contador é zerado para a próxima etapa da jornada.</span>
+              </div>
+
+              <div class="form-group" style="margin-bottom:14px;">
+                <label for="followup-action-limit"><i class="fa-solid fa-flag-checkered"></i> Ação ao Atingir o Limite Sem Resposta</label>
+                <select id="followup-action-limit" class="form-select">
+                  <option value="PAUSE_FOLLOWUP" selected>Apenas parar os follow-ups (Manter lead no funil)</option>
+                  <option value="UNRESPONSIVE">Marcar status como NÃO RESPONDEU (UNRESPONSIVE)</option>
+                  <option value="DISQUALIFY">Desqualificar lead por inatividade (DISQUALIFIED)</option>
+                </select>
+                <span class="field-hint">Ação automática executada quando todas as tentativas se esgotarem sem resposta.</span>
+              </div>
+            </div>
+
+            <!-- CARD 3: COMO AGIR (MODO DE GERAÇÃO) -->
+            <div class="glass-card" style="grid-column: 1 / -1;">
+              <div class="card-header" style="margin-bottom:16px;">
+                <div class="card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div>
+                  <h3>Como Agir (Estratégia de Abordagem)</h3>
+                  <p>Escolha entre inteligência artificial contextual ou textos pré-fixados para cada tentativa.</p>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:16px;">
+                <label><i class="fa-solid fa-sliders"></i> Tipo de Geração de Mensagem</label>
+                <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px;">
+                  <label class="radio-card" style="flex:1; min-width:260px; padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; gap:12px; cursor:pointer;">
+                    <input type="radio" name="followup-mode" value="AI_CONTEXTUAL" checked onchange="toggleFollowUpModeUI()">
+                    <div>
+                      <strong style="display:block; color:var(--text-primary);"><i class="fa-solid fa-sparkles" style="color:var(--accent);"></i> IA Contextual Dinâmica (Recomendado)</strong>
+                      <span style="font-size:12px; color:var(--text-secondary); display:block; margin-top:4px;">A IA lê o histórico da conversa e gera uma mensagem sob medida, adaptada ao momento do lead.</span>
+                    </div>
+                  </label>
+                  <label class="radio-card" style="flex:1; min-width:260px; padding:14px; border-radius:10px; border:1px solid var(--border-subtle); display:flex; gap:12px; cursor:pointer;">
+                    <input type="radio" name="followup-mode" value="CUSTOM_SEQUENCE" onchange="toggleFollowUpModeUI()">
+                    <div>
+                      <strong style="display:block; color:var(--text-primary);"><i class="fa-solid fa-list-ol" style="color:var(--success);"></i> Sequência Fixa Personalizada</strong>
+                      <span style="font-size:12px; color:var(--text-secondary); display:block; margin-top:4px;">Defina manualmente o texto exato de cada tentativa com suporte a variáveis como <code>{nome}</code>.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- SEQUENCE FIELDS (VISIBLE ONLY WHEN CUSTOM_SEQUENCE SELECTED) -->
+              <div id="followup-custom-sequence-container" style="display:none; background:rgba(0,0,0,0.2); padding:16px; border-radius:10px; border:1px solid var(--border-subtle);">
+                <h4 style="margin:0 0 12px; font-size:14px; color:var(--accent);"><i class="fa-solid fa-pen-to-square"></i> Mensagens da Sequência</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+                  <div class="form-group">
+                    <label for="seq-msg-1">Tentativa 1 (1º Reengajamento)</label>
+                    <textarea id="seq-msg-1" class="form-textarea" rows="3" placeholder="Olá {nome}, tudo bem? Passando para ver se conseguiu checar minha mensagem anterior. 😊"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="seq-msg-2">Tentativa 2 (2º Reengajamento)</label>
+                    <textarea id="seq-msg-2" class="form-textarea" rows="3" placeholder="Oi {nome}! Sei que o dia a dia é corrido. Ficou alguma dúvida sobre o que conversamos?"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="seq-msg-3">Tentativa 3 (Última Tentativa / Cordial)</label>
+                    <textarea id="seq-msg-3" class="form-textarea" rows="3" placeholder="Olá {nome}, vou deixar nosso canal aberto caso queira retomar quando tiver mais tempo! Um abraço."></textarea>
+                  </div>
+                </div>
+                <span class="field-hint" style="margin-top:8px;">Variáveis suportadas: <code>{nome}</code> (nome do lead) e <code>{empresa}</code> (nome da sua empresa).</span>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+            <button type="submit" class="btn-accent" style="padding:10px 24px;">
+              <i class="fa-solid fa-floppy-disk"></i> Salvar Todas as Configurações
+            </button>
+          </div>
+        </form>
+
+        <!-- SCAN RESULTS MODAL / CARD -->
+        <div id="followup-scan-results" class="glass-card" style="display:none; margin-top:24px; border-left:4px solid var(--success);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h4 style="margin:0; font-size:16px;" id="followup-scan-title"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Relatório da Varredura</h4>
+            <button class="btn-icon-sm" onclick="id('followup-scan-results').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div id="followup-scan-body" style="font-size:13px; color:var(--text-secondary);"></div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: FLOWS ======================== -->
+      <section id="page-flows" class="page">
+        <div class="flows-layout">
+          <!-- Flow List / Sidebar -->
+          <div class="flows-sidebar glass">
+            <div class="flows-sidebar-header">
+              <h3><i class="fa-solid fa-diagram-project"></i> Meus Fluxos</h3>
+              <button class="btn-icon-sm" onclick="createNewFlow()" title="Novo Fluxo"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div id="flows-list" class="flows-list">
+              <!-- Flow items here -->
+            </div>
+          </div>
+          
+          <!-- Flow Editor -->
+          <div class="flows-editor glass" id="flow-editor-wrap" style="display:none;">
+            <div class="flows-editor-header">
+              <div class="flow-info-form">
+                <input type="text" id="flow-name" placeholder="Nome do Fluxo">
+                <select id="flow-trigger">
+                  <option value="keyword">Palavra-chave</option>
+                  <option value="inbound_new_lead">Novo Lead</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <input type="text" id="flow-trigger-value" placeholder="Valor (ex: promoção)">
+                <label class="flow-active-toggle">
+                  <input type="checkbox" id="flow-is-active"> Ativo
+                </label>
+              </div>
+              <div class="flow-actions">
+                <button class="btn-danger-outline" onclick="deleteCurrentFlow()"><i class="fa-solid fa-trash"></i> Excluir</button>
+                <button class="btn-accent" onclick="saveCurrentFlow()"><i class="fa-solid fa-save"></i> Salvar Fluxo</button>
+              </div>
+            </div>
+            
+            <div class="drawflow-container">
+              <!-- Toolbar -->
+              <div class="drawflow-toolbar">
+                <span>Adicionar Nós:</span>
+                <div class="df-node-btn" draggable="true" ondragstart="dragNode(event)" data-node="message"><i class="fa-solid fa-message"></i> Mensagem Fixa</div>
+                <div class="df-node-btn" draggable="true" ondragstart="dragNode(event)" data-node="media"><i class="fa-solid fa-photo-film"></i> Enviar Mídia</div>
+                <div class="df-node-btn" draggable="true" ondragstart="dragNode(event)" data-node="wait_reply"><i class="fa-solid fa-clock"></i> Aguardar Resposta</div>
+                <div class="df-node-btn" draggable="true" ondragstart="dragNode(event)" data-node="ai_message"><i class="fa-solid fa-robot"></i> Resposta IA</div>
+                <div class="df-node-btn" draggable="true" ondragstart="dragNode(event)" data-node="human_transfer"><i class="fa-solid fa-user-headset"></i> Transf. Humano</div>
+              </div>
+              <!-- Canvas -->
+              <div id="drawflow" ondrop="dropNode(event)" ondragover="allowDropNode(event)"></div>
+            </div>
+          </div>
+          
+          <div class="flows-empty" id="flows-empty">
+            <i class="fa-solid fa-diagram-project"></i>
+            <p>Selecione um fluxo ou crie um novo para começar.</p>
+            <button class="btn-accent mt-16" onclick="createNewFlow()">Criar Novo Fluxo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================== PAGE: TRAINING ======================== -->
+      <section id="page-training" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-brain"></i> Treinamento e Conhecimento</h2>
+            <p>Alimente o cérebro do seu SDR com playbooks, corrija comportamentos e monitore o aprendizado.</p>
+          </div>
+        </div>
+
+        <!-- Training Tabs -->
+        <div class="inner-tabs">
+          <button class="inner-tab active" data-inner-tab="tab-playbooks">
+            <i class="fa-solid fa-book-open"></i> Playbooks (Manual)
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-training-auto">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Treino Inteligente
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-reflections">
+            <i class="fa-solid fa-lightbulb"></i> Reflexões (Autoaprendizado)
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-corrections">
+            <i class="fa-solid fa-user-pen"></i> Correções Manuais
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-brain">
+            <i class="fa-solid fa-chart-radar"></i> Maturidade
+          </button>
+        </div>
+
+        <!-- Playbooks Tab -->
+        <div id="tab-playbooks" class="inner-tab-content active">
+          <div class="knowledge-grid">
+            <div class="glass form-card">
+              <h3><i class="fa-solid fa-plus-circle"></i> Adicionar Conhecimento</h3>
+              <form id="knowledge-form" class="config-form mt-16">
+                <div class="form-group">
+                  <label for="knowledge-title"><i class="fa-solid fa-heading"></i> Título do Documento</label>
+                  <input type="text" id="knowledge-title" required placeholder="Ex: Playbook Apartamentos Vila Nova">
+                </div>
+                <div class="form-group">
+                  <label for="knowledge-chunks"><i class="fa-solid fa-list"></i> Fatos e Informações (um por linha)</label>
+                  <textarea id="knowledge-chunks" required rows="10" placeholder="O condomínio possui piscina e academia.&#10;O preço inicial é R$ 450.000.&#10;A entrega está prevista para Dezembro/2027."></textarea>
+                  <span class="field-hint">Cada linha vira um embedding vetorial (pgvector). Seja objetivo e direto.</span>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-accent">
+                    <i class="fa-solid fa-brain"></i> Treinar SDR com este Conhecimento
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="glass list-card">
+              <h3><i class="fa-solid fa-folder-open"></i> Conhecimento Carregado</h3>
+              <div id="knowledge-list" class="scrollable-list">
+                <div class="empty-state"><i class="fa-solid fa-book-skull"></i><p>Nenhum playbook ainda. Adicione informações ao lado.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Corrections Tab -->
+        <div id="tab-corrections" class="inner-tab-content">
+          <div class="glass list-card full-width">
+            <div class="list-card-header">
+              <h3><i class="fa-solid fa-user-pen"></i> Histórico de Correções Humanas</h3>
+              <p class="text-muted" style="font-size:13px;">Cada correção é vetorizada (pgvector) e consultada pelo SDR em situações similares futuras.</p>
+            </div>
+            <div id="corrections-list" class="scrollable-list">
+              <div class="empty-state"><i class="fa-solid fa-pen-to-square"></i><p>Nenhuma correção registrada. Clique em uma resposta azul do SDR na aba Conversas para corrigir.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brain Analysis Tab -->
+        <div id="tab-brain" class="inner-tab-content">
+          <div class="brain-grid">
+            <div class="glass brain-score-card">
+              <h3><i class="fa-solid fa-star"></i> Score de Maturidade do SDR</h3>
+              <div class="brain-score-ring" id="brain-score-ring">
+                <svg viewBox="0 0 120 120" class="score-svg">
+                  <circle cx="60" cy="60" r="52" class="score-track"/>
+                  <circle cx="60" cy="60" r="52" class="score-fill" id="brain-score-arc"
+                    stroke-dasharray="326.73"
+                    stroke-dashoffset="326.73"
+                    transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="score-center">
+                  <span class="score-num" id="brain-score-num">0</span>
+                  <span class="score-max">/100</span>
+                </div>
+              </div>
+              <p class="score-label" id="brain-score-label">Iniciante</p>
+            </div>
+
+            <div class="glass brain-breakdown-card">
+              <h3><i class="fa-solid fa-layer-group"></i> O que o SDR Sabe</h3>
+              <div class="brain-stats-list" id="brain-stats-list">
+                <div class="brain-stat-row">
+                  <div class="bsr-icon purple"><i class="fa-solid fa-book-open"></i></div>
+                  <div class="bsr-info">
+                    <strong>Playbooks</strong>
+                    <span id="brain-source-count">0 documentos</span>
+                  </div>
+                  <span class="bsr-value" id="brain-chunk-count">0 chunks</span>
+                </div>
+                <div class="brain-stat-row">
+                  <div class="bsr-icon orange"><i class="fa-solid fa-user-pen"></i></div>
+                  <div class="bsr-info">
+                    <strong>Correções Aprendidas</strong>
+                    <span>Feedbacks humanos processados</span>
+                  </div>
+                  <span class="bsr-value" id="brain-correction-count">0</span>
+                </div>
+                <div class="brain-stat-row">
+                  <div class="bsr-icon blue"><i class="fa-solid fa-comments"></i></div>
+                  <div class="bsr-info">
+                    <strong>Conversas Processadas</strong>
+                    <span>Leads com histórico gerado</span>
+                  </div>
+                  <span class="bsr-value" id="brain-lead-count">0</span>
+                </div>
+                <div class="brain-stat-row">
+                  <div class="bsr-icon green"><i class="fa-solid fa-memory"></i></div>
+                  <div class="bsr-info">
+                    <strong>Memórias de Lead</strong>
+                    <span>Fatos extraídos de conversas reais</span>
+                  </div>
+                  <span class="bsr-value" id="brain-memory-count">0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass brain-tip-card">
+              <h3><i class="fa-solid fa-lightbulb"></i> Como Aumentar a Maturidade</h3>
+              <ul class="tip-list">
+                <li><span class="tip-num">1</span> Adicione mais playbooks com fatos específicos do seu negócio</li>
+                <li><span class="tip-num">2</span> Corrija respostas erradas do SDR clicando nos balões azuis em Conversas</li>
+                <li><span class="tip-num">3</span> Deixe o SDR processar mais conversas — ele aprende com cada interação</li>
+                <li><span class="tip-num">4</span> Use fluxos de qualificação bem definidos para extrair mais dados dos leads</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: AI LOGIC & REASONING ======================== -->
+      <section id="page-ai-logic" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-network-wired"></i> Lógica Cognitiva & Raciocínio da IA</h2>
+            <p>Acompanhe em tempo real como a IA processa mensagens, avalia objetivos, define estratégias e consulta o playbook comercial.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary-outline" onclick="loadAILogicPage()">
+              <i class="fa-solid fa-rotate-right"></i> Atualizar Logs
+            </button>
+          </div>
+        </div>
+
+        <!-- Inner Tabs Navigation -->
+        <div class="inner-tabs">
+          <button class="inner-tab active" data-inner-tab="tab-ai-pipeline">
+            <i class="fa-solid fa-sitemap"></i> Mapa do Pipeline Cognitivo
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-ai-live-traces">
+            <i class="fa-solid fa-list-check"></i> Logs de Decisão em Tempo Real
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-ai-simulator">
+            <i class="fa-solid fa-flask-vial"></i> Simulador de Raciocínio (Auditoria)
+          </button>
+        </div>
+
+        <!-- TAB 1: COGNITIVE PIPELINE ARCHITECTURE MAP -->
+        <div id="tab-ai-pipeline" class="inner-tab-content active">
+          
+          <div class="pipeline-intro glass">
+            <div class="pipeline-intro-icon">
+              <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div>
+              <h4 style="margin:0 0 4px 0; color:var(--text-1);">Por que a IA avalia o objetivo antes de responder?</h4>
+              <p style="margin:0; font-size:13px; color:var(--text-2); line-height:1.5;">
+                O SDR não é um chatbot genérico que apenas responde perguntas. Ele possui uma <strong>Arquitetura Cognitiva Autônoma de 6 Etapas</strong>. Antes de formular qualquer resposta no WhatsApp, ele analisa em qual estágio do funil o lead está, se a informação necessária foi obtida e qual a melhor estratégia de vendas a seguir.
+              </p>
+            </div>
+          </div>
+
+          <div class="pipeline-steps-grid">
+            
+            <!-- Step 1 -->
+            <div class="pipeline-step-card glass">
+              <div class="step-num-badge">1</div>
+              <div class="step-header">
+                <i class="fa-solid fa-inbox" style="color:#60a5fa;"></i>
+                <h4>Inbound & Contexto Ativo</h4>
+              </div>
+              <p class="step-desc">A mensagem recebida é salva imediatamente no banco e os últimos 10 diálogos da conversa são carregados para manter a memória contextual.</p>
+              <div class="step-engine-tag">ContextEngine & EventBus</div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="pipeline-step-card glass">
+              <div class="step-num-badge">2</div>
+              <div class="step-header">
+                <i class="fa-solid fa-brain" style="color:#a78bfa;"></i>
+                <h4>Extração de Memórias</h4>
+              </div>
+              <p class="step-desc">A IA extrai fatos chave ditos pelo lead (ex: nome, veículo de interesse, orçamento, prazo) e salva como memórias permanentes.</p>
+              <div class="step-engine-tag">MemoryEngine</div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="pipeline-step-card glass">
+              <div class="step-num-badge">3</div>
+              <div class="step-header">
+                <i class="fa-solid fa-book-bookmark" style="color:#34d399;"></i>
+                <h4>RAG Vetorial (Playbook)</h4>
+              </div>
+              <p class="step-desc">O sistema busca nos documentos e playbooks da sua empresa os trechos mais relevantes usando embeddings vetoriais (pgvector).</p>
+              <div class="step-engine-tag">KnowledgeEngine (PGVector)</div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="pipeline-step-card glass highlighted">
+              <div class="step-num-badge">4</div>
+              <div class="step-header">
+                <i class="fa-solid fa-bullseye" style="color:#f59e0b;"></i>
+                <h4>Avaliação do Objetivo</h4>
+              </div>
+              <p class="step-desc">O <code>ObjectiveEngine</code> avalia se o objetivo comercial anterior foi cumprido e define o próximo passo (ex: <em>Descobrir orçamento</em> &rarr; <em>Agendar visita</em>).</p>
+              <div class="step-engine-tag">ObjectiveEngine</div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="pipeline-step-card glass">
+              <div class="step-num-badge">5</div>
+              <div class="step-header">
+                <i class="fa-solid fa-chess" style="color:#ec4899;"></i>
+                <h4>Estratégia de Abordagem</h4>
+              </div>
+              <p class="step-desc">Define a tática psicológica comercial ideal para a mensagem (ex: <em>Rapport & Empatia</em>, <em>Educação do Lead</em>, <em>Gatilho de Escassez</em>).</p>
+              <div class="step-engine-tag">StrategyEngine</div>
+            </div>
+
+            <!-- Step 6 -->
+            <div class="pipeline-step-card glass">
+              <div class="step-num-badge">6</div>
+              <div class="step-header">
+                <i class="fa-solid fa-comments" style="color:#38bdf8;"></i>
+                <h4>Geração & Formatação</h4>
+              </div>
+              <p class="step-desc">O Gemini 2.5 Flash monta a resposta final respeitando a persona, o limite de palavras e as regras de quebra em bolhas curtas no WhatsApp.</p>
+              <div class="step-engine-tag">Gemini 2.5 Flash + Formatter</div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- TAB 2: LIVE DECISION TRACES -->
+        <div id="tab-ai-live-traces" class="inner-tab-content">
+          
+          <div class="glass leads-table-card">
+            <div class="table-responsive">
+              <table class="leads-table" id="traces-table">
+                <thead>
+                  <tr>
+                    <th>Lead / Contato</th>
+                    <th>Mensagem Recebida</th>
+                    <th>Objetivo Comercial Definido</th>
+                    <th>Estratégia Adotada</th>
+                    <th>Resposta Gerada</th>
+                    <th>Data / Hora</th>
+                    <th style="text-align:right;">Auditoria</th>
+                  </tr>
+                </thead>
+                <tbody id="traces-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center py-20 text-muted">Carregando logs de decisão...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 3: AI REASONING SIMULATOR -->
+        <div id="tab-ai-simulator" class="inner-tab-content">
+          
+          <div class="simulator-layout">
+            
+            <!-- Left: Simulator Input Form -->
+            <div class="glass form-card" style="flex:1; max-width:450px;">
+              <h3><i class="fa-solid fa-vial"></i> Simular Mensagem do Lead</h3>
+              <p class="text-muted" style="font-size:12px; margin-bottom:16px;">Teste como o cérebro da IA responderia a uma pergunta específica e veja o raciocínio detalhado de cada motor.</p>
+
+              <form id="form-ai-simulator" onsubmit="runAISimulation(event)">
+                <div class="form-group">
+                  <label><i class="fa-solid fa-user"></i> Selecionar Lead de Contexto (Opcional)</label>
+                  <select id="sim-lead-select">
+                    <option value="">-- Novo Lead (Sem histórico prévio) --</option>
+                  </select>
+                  <span class="field-hint">Selecione um lead existente para usar as memórias e histórico dele no teste.</span>
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fa-solid fa-comment-dots"></i> Mensagem do Lead *</label>
+                  <textarea id="sim-input-message" rows="4" required placeholder="Ex: Olá, qual o preço da Ranger 2026 e vocês aceitam meu usado na troca?"></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn-accent" id="btn-run-simulation">
+                    <i class="fa-solid fa-play"></i> Executar Auditoria Cognitiva
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Interactive Reasoning Stages Output -->
+            <div class="glass list-card" style="flex:2;">
+              <div class="list-card-header">
+                <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Auditoria de Raciocínio em Tempo Real</h3>
+                <span id="sim-status-badge" class="badge-status-idle">Aguardando execução</span>
+              </div>
+
+              <div id="sim-result-container" class="sim-stages-container">
+                <div class="empty-state">
+                  <i class="fa-solid fa-brain" style="font-size:40px; opacity:0.3;"></i>
+                  <p>Digite uma mensagem ao lado e clique em <strong>Executar Auditoria Cognitiva</strong> para inspecionar todas as decisões da IA.</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: OUTBOUND (DISPAROS) ======================== -->
+      <section id="page-outbound" class="page">
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-paper-plane"></i> Disparos para Novos Leads (Outbound)</h2>
+            <p>Envie a mensagem inicial no WhatsApp para novos leads manualmente, em lote ou conecte suas landing pages e CRM via API.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-outline" onclick="loadOutboundHistory()">
+              <i class="fa-solid fa-arrows-rotate"></i> Atualizar Histórico
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode Switcher Tabs -->
+        <div class="media-tabs-bar" style="margin-bottom: 20px;">
+          <button type="button" id="tab-btn-outbound-manual" class="media-tab-btn active" onclick="switchOutboundTab('manual')">
+            <i class="fa-solid fa-user-plus"></i> Disparo Individual / Manual
+          </button>
+          <button type="button" id="tab-btn-outbound-bulk" class="media-tab-btn" onclick="switchOutboundTab('bulk')">
+            <i class="fa-solid fa-users-line"></i> Disparo em Lote (Lista / CSV)
+          </button>
+          <button type="button" id="tab-btn-outbound-api" class="media-tab-btn" onclick="switchOutboundTab('api')">
+            <i class="fa-solid fa-code"></i> Integração via API & Webhooks
+          </button>
+        </div>
+
+        <!-- TAB 1: DISPARO MANUAL -->
+        <div id="outbound-tab-manual" class="outbound-tab-content">
+          <div class="cards-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="glass-card">
+              <div class="card-header" style="margin-bottom:16px;">
+                <div class="card-icon"><i class="fa-solid fa-paper-plane"></i></div>
+                <div>
+                  <h3>Novo Disparo WhatsApp</h3>
+                  <p>Inicie uma conversa ativa com um novo contato.</p>
+                </div>
+              </div>
+
+              <form id="form-outbound-single" onsubmit="sendSingleOutbound(event)">
+                <div class="form-group" style="margin-bottom:14px;">
+                  <label for="outbound-phone"><i class="fa-brands fa-whatsapp"></i> Telefone do Lead (com DDI e DDD) *</label>
+                  <input type="tel" id="outbound-phone" class="form-input" placeholder="Ex: 5511999998888" required>
+                  <span class="field-hint">Insira o DDI (55 para Brasil) seguido do DDD e número completo.</span>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                  <label for="outbound-name"><i class="fa-solid fa-user"></i> Nome do Lead (Opcional)</label>
+                  <input type="text" id="outbound-name" class="form-input" placeholder="Ex: João da Silva">
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label for="outbound-message"><i class="fa-solid fa-comment-dots"></i> Mensagem Inicial *</label>
+                    <button type="button" class="btn-link" onclick="loadDefaultOutboundGreeting()" style="font-size:12px; color:var(--accent); background:none; border:none; cursor:pointer;">
+                      <i class="fa-solid fa-wand-magic-sparkles"></i> Usar Saudação do Agente
+                    </button>
+                  </div>
+                  <textarea id="outbound-message" class="form-textarea" rows="4" placeholder="Olá {nome}! Tudo bem? Sou da {empresa}, vi seu interesse e gostaria de entender como podemos te ajudar." required></textarea>
+                  <span class="field-hint">Variáveis automáticas: <code>{nome}</code> e <code>{empresa}</code></span>
+                </div>
+
+                <button type="submit" class="btn-accent" id="btn-outbound-send" style="width:100%; justify-content:center; padding:12px;">
+                  <i class="fa-solid fa-paper-plane"></i> Enviar Mensagem via WhatsApp
+                </button>
+              </form>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="glass-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div class="card-header" style="margin-bottom:16px;">
+                  <div class="card-icon"><i class="fa-brands fa-whatsapp" style="color:var(--success);"></i></div>
+                  <div>
+                    <h3>Pré-visualização do WhatsApp</h3>
+                    <p>Como a mensagem será visualizada pelo lead.</p>
+                  </div>
+                </div>
+
+                <div style="background:#0b141a; border-radius:12px; padding:16px; min-height:180px; display:flex; flex-direction:column; justify-content:flex-end;">
+                  <div style="background:#005c4b; color:#e9edef; padding:10px 14px; border-radius:10px 10px 2px 10px; max-width:85%; align-self:flex-end; font-size:14px; line-height:1.4; box-shadow:0 1px 2px rgba(0,0,0,0.3);">
+                    <span id="outbound-preview-text">Olá! Tudo bem? Como posso te ajudar hoje?</span>
+                    <span style="display:block; text-align:right; font-size:10px; color:rgba(255,255,255,0.6); margin-top:4px;">12:00 ✓✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top:16px; padding:12px; background:rgba(99,102,241,0.08); border-radius:8px; border:1px solid rgba(99,102,241,0.2); font-size:12px; color:var(--text-secondary);">
+                <i class="fa-solid fa-circle-info" style="color:var(--accent);"></i> Assim que o lead responder a esta mensagem, o SDR (Simples ou Avançado) assumirá o atendimento imediatamente!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: DISPARO EM LOTE -->
+        <div id="outbound-tab-bulk" class="outbound-tab-content" style="display:none;">
+          <div class="glass-card">
+            <div class="card-header" style="margin-bottom:16px;">
+              <div class="card-icon"><i class="fa-solid fa-users-line"></i></div>
+              <div>
+                <h3>Disparo em Lote para Lista de Contatos</h3>
+                <p>Cole uma lista de telefones e nomes para disparar com cadência segura anti-banimento.</p>
+              </div>
+            </div>
+
+            <form id="form-outbound-bulk" onsubmit="sendBulkOutbound(event)">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div class="form-group">
+                  <label for="outbound-bulk-list"><i class="fa-solid fa-list-ol"></i> Lista de Contatos (Um por linha) *</label>
+                  <textarea id="outbound-bulk-list" class="form-textarea" rows="8" placeholder="5511999998888, João Silva&#10;5521988887777, Maria Souza&#10;5531977776666" required></textarea>
+                  <span class="field-hint">Formato: <code>Telefone, Nome</code> ou apenas o <code>Telefone</code> em cada linha.</span>
+                </div>
+
+                <div>
+                  <div class="form-group" style="margin-bottom:14px;">
+                    <label for="outbound-bulk-message"><i class="fa-solid fa-comment-dots"></i> Mensagem para o Lote *</label>
+                    <textarea id="outbound-bulk-message" class="form-textarea" rows="4" placeholder="Olá {nome}! Tudo bem? Sou da {empresa} e preparei uma condição especial para você." required></textarea>
+                    <span class="field-hint">Variáveis automáticas: <code>{nome}</code> e <code>{empresa}</code></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="outbound-bulk-delay"><i class="fa-solid fa-stopwatch"></i> Intervalo de Segurança entre Envios</label>
+                    <select id="outbound-bulk-delay" class="form-select">
+                      <option value="3">3 segundos (Rápido)</option>
+                      <option value="5" selected>5 segundos (Recomendado)</option>
+                      <option value="10">10 segundos (Mais Seguro)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div id="bulk-progress-container" style="display:none; margin:16px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                  <span id="bulk-progress-label">Enviando disparos...</span>
+                  <span id="bulk-progress-percent">0%</span>
+                </div>
+                <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                  <div id="bulk-progress-bar" style="width:0%; height:100%; background:var(--accent); transition:width 0.3s ease;"></div>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                <button type="submit" class="btn-accent" id="btn-bulk-send" style="padding:10px 24px;">
+                  <i class="fa-solid fa-paper-plane"></i> Iniciar Disparos em Lote
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- TAB 3: API INTEGRATION -->
+        <div id="outbound-tab-api" class="outbound-tab-content" style="display:none;">
+          <div class="cards-grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- API 1: Cadastrar Lead -->
+            <div class="glass-card">
+              <div class="card-header" style="margin-bottom:14px;">
+                <span class="badge" style="background:#22c55e; color:#fff; font-weight:700;">POST</span>
+                <h3 style="font-size:15px; margin:0 0 0 10px;">/tenants/:tenantId/leads</h3>
+              </div>
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Cadastra novos leads vindos de Webhooks, n8n, Make, Typeform, Elementor ou CRM.</p>
+              
+              <div style="background:#0f172a; padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:#e2e8f0; overflow-x:auto; margin-bottom:12px;">
+<pre style="margin:0;">curl -X POST "http://localhost:3030/tenants/<span class="api-tenant-placeholder">TENANT_ID</span>/leads" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <span class="api-token-placeholder">SEU_TOKEN</span>" \
+  -d '{
+    "phone": "5511999998888",
+    "name": "Carlos Silva",
+    "email": "carlos@email.com",
+    "tags": ["facebook-ads", "imoveis"],
+    "upsert": true
+  }'</pre>
+              </div>
+              <button class="btn-outline-sm" onclick="copyApiCurl('leads')"><i class="fa-regular fa-copy"></i> Copiar Exemplo cURL</button>
+            </div>
+
+            <!-- API 2: Disparo Direto Outbound -->
+            <div class="glass-card">
+              <div class="card-header" style="margin-bottom:14px;">
+                <span class="badge" style="background:#3b82f6; color:#fff; font-weight:700;">POST</span>
+                <h3 style="font-size:15px; margin:0 0 0 10px;">/tenants/:tenantId/outbound/send</h3>
+              </div>
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Cria o lead e envia a primeira mensagem ativa pelo WhatsApp instantaneamente.</p>
+              
+              <div style="background:#0f172a; padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:#e2e8f0; overflow-x:auto; margin-bottom:12px;">
+<pre style="margin:0;">curl -X POST "http://localhost:3030/tenants/<span class="api-tenant-placeholder">TENANT_ID</span>/outbound/send" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <span class="api-token-placeholder">SEU_TOKEN</span>" \
+  -d '{
+    "phone": "5511999998888",
+    "name": "Carlos Silva",
+    "message": "Olá Carlos! Vi seu cadastro sobre nosso produto. Como posso te ajudar?"
+  }'</pre>
+              </div>
+              <button class="btn-outline-sm" onclick="copyApiCurl('outbound')"><i class="fa-regular fa-copy"></i> Copiar Exemplo cURL</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- OUTBOUND CAMPAIGN HISTORY TABLE -->
+        <div class="glass-card" style="margin-top: 24px;">
+          <div class="card-header" style="margin-bottom:16px;">
+            <div class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+              <h3>Histórico de Disparos Realizados</h3>
+              <p>Registro de todas as mensagens de prospecção e novos contatos iniciados.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="outbound-history-table">
+              <thead>
+                <tr>
+                  <th>Destinatário</th>
+                  <th>Mensagem Enviada</th>
+                  <th>Status</th>
+                  <th>Origem</th>
+                  <th>Data/Hora</th>
+                </tr>
+              </thead>
+              <tbody id="outbound-history-tbody">
+                <tr>
+                  <td colspan="5" style="text-align:center; padding:24px; color:var(--text-secondary);">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Carregando histórico de disparos...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: LEADS ======================== -->
+      <section id="page-leads" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-users"></i> Gestão de Leads & Contatos</h2>
+            <p>Cadastre contatos, gerencie tags coloridas, pesquise por nome e adicione campos personalizados.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-accent" onclick="openCreateLeadModal()">
+              <i class="fa-solid fa-user-plus"></i> Novo Lead
+            </button>
+          </div>
+        </div>
+
+        <!-- Leads Quick Status Tabs -->
+        <div class="leads-status-tabs">
+          <button class="status-tab active" data-status-tab="ALL" onclick="handleLeadsStatusTab('ALL')">
+            <i class="fa-solid fa-list"></i> Todos <span class="tab-count" id="count-status-all">0</span>
+          </button>
+          <button class="status-tab" data-status-tab="NEW" onclick="handleLeadsStatusTab('NEW')">
+            <i class="fa-solid fa-sparkles" style="color:#60a5fa;"></i> Novos <span class="tab-count" id="count-status-new">0</span>
+          </button>
+          <button class="status-tab" data-status-tab="ACTIVE" onclick="handleLeadsStatusTab('ACTIVE')">
+            <i class="fa-solid fa-comments" style="color:#f59e0b;"></i> Em Atendimento <span class="tab-count" id="count-status-active">0</span>
+          </button>
+          <button class="status-tab" data-status-tab="QUALIFIED" onclick="handleLeadsStatusTab('QUALIFIED')">
+            <i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Qualificados (Concluídos) <span class="tab-count" id="count-status-qualified">0</span>
+          </button>
+          <button class="status-tab" data-status-tab="DISQUALIFIED" onclick="handleLeadsStatusTab('DISQUALIFIED')">
+            <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i> Desqualificados <span class="tab-count" id="count-status-disqualified">0</span>
+          </button>
+          <button class="status-tab" data-status-tab="HANDOFF" onclick="handleLeadsStatusTab('HANDOFF')">
+            <i class="fa-solid fa-user-clock" style="color:#a855f7;"></i> Atendimento Humano <span class="tab-count" id="count-status-handoff">0</span>
+          </button>
+        </div>
+
+        <!-- Toolbar: Filters & Search -->
+        <div class="leads-toolbar glass">
+          <div class="search-wrap" style="flex:1; min-width:240px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="leads-search-input" placeholder="Buscar por nome, telefone ou email..." oninput="handleLeadsSearch(this.value)">
+          </div>
+
+          <div class="toolbar-filters">
+            <div class="filter-select-wrap">
+              <i class="fa-solid fa-filter"></i>
+              <select id="leads-filter-status" onchange="handleLeadsStatusFilter(this.value)">
+                <option value="ALL">Todos os Status</option>
+                <option value="NEW">Novos (NEW)</option>
+                <option value="ACTIVE">Em Atendimento (ACTIVE)</option>
+                <option value="QUALIFIED">Qualificados (QUALIFIED)</option>
+                <option value="DISQUALIFIED">Desqualificados (DISQUALIFIED)</option>
+                <option value="HANDOFF">Atendimento Humano (HANDOFF)</option>
+              </select>
+            </div>
+
+            <div class="filter-select-wrap">
+              <i class="fa-solid fa-tag"></i>
+              <select id="leads-filter-tag" onchange="handleLeadsTagFilter(this.value)">
+                <option value="ALL">Todas as Tags</option>
+              </select>
+            </div>
+
+            <button class="btn-icon-refresh" onclick="loadLeadsPage()" title="Atualizar lista">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Leads Stats Bar -->
+        <div class="leads-stats-bar">
+          <span id="leads-count-summary">Carregando leads...</span>
+        </div>
+
+        <!-- Leads Table Card -->
+        <div class="glass leads-table-card">
+          <div class="table-responsive">
+            <table class="leads-table" id="leads-table">
+              <thead>
+                <tr>
+                  <th>Lead / Contato</th>
+                  <th>Status</th>
+                  <th>Tags</th>
+                  <th>Campos Personalizados</th>
+                  <th>Última Interação</th>
+                  <th style="text-align:right;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body">
+                <tr>
+                  <td colspan="6" class="text-center py-20 text-muted">Carregando leads...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: CONVERSATIONS ======================== -->
+      <section id="page-conversations" class="page">
+        <div class="chat-workspace">
+
+          <!-- Left: Lead List -->
+          <div class="lead-panel glass">
+            <div class="panel-header">
+              <h3><i class="fa-solid fa-users"></i> Leads</h3>
+              <span class="leads-count" id="leads-total-count">0</span>
+            </div>
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="lead-search" placeholder="Pesquisar por nome ou telefone...">
+            </div>
+            <ul id="lead-list" class="lead-list">
+              <li class="lead-empty">Selecione uma empresa para ver os leads.</li>
+            </ul>
+          </div>
+
+          <!-- Right: Chat -->
+          <div class="chat-panel glass">
+            <div id="chat-header" class="chat-header">
+              <div class="chat-lead-info">
+                <div class="chat-avatar" id="chat-avatar">?</div>
+                <div>
+                  <h4 id="chat-lead-name">Selecione um Lead</h4>
+                  <span id="chat-lead-phone" class="text-muted">–</span>
+                </div>
+              </div>
+              <div id="chat-lead-badge-container" class="chat-badges"></div>
+              <button id="btn-pause-ai" class="btn-danger-outline" style="display:none; padding:4px 8px; font-size:11px;" title="Pausar IA e assumir o atendimento manual (Hand-off)">
+                <i class="fa-solid fa-hand-paper"></i> Pausar IA
+              </button>
+              <button id="btn-force-reflection" class="btn-accent-outline" style="display:none; padding:4px 8px; font-size:11px;" title="Forçar a IA a extrair aprendizados desta conversa agora">
+                <i class="fa-solid fa-lightbulb"></i> Forçar Reflexão
+              </button>
+            </div>
+
+            <div id="chat-messages" class="chat-messages">
+              <div class="chat-empty">
+                <i class="fa-regular fa-comments"></i>
+                <p>Selecione um lead para ver a conversa e interagir com o SDR.</p>
+              </div>
+            </div>
+
+            <div class="chat-correction-tip">
+              <i class="fa-solid fa-lightbulb"></i>
+              <span>Clique em qualquer <b>resposta do SDR</b> para corrigir e ensiná-lo.</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================== PAGE: MEDIA ======================== -->
+      <section id="page-media" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-photo-film"></i> Gerenciador de Mídias</h2>
+            <p>Faça upload de imagens, vídeos, áudios e PDFs ou cadastre URLs. O SDR envia automaticamente no WhatsApp usando a tag <code>[SEND_MEDIA: nome]</code>.</p>
+          </div>
+        </div>
+
+        <div class="knowledge-grid">
+          <div class="glass form-card">
+            <div class="media-form-header">
+              <h3><i class="fa-solid fa-photo-film"></i> Cadastrar Nova Mídia</h3>
+              <div class="media-mode-tabs">
+                <button type="button" class="media-tab-btn active" id="tab-btn-upload" onclick="switchMediaMode('upload')">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload de Arquivo
+                </button>
+                <button type="button" class="media-tab-btn" id="tab-btn-url" onclick="switchMediaMode('url')">
+                  <i class="fa-solid fa-link"></i> URL Pública
+                </button>
+              </div>
+            </div>
+
+            <form id="media-form" class="mt-16" onsubmit="handleMediaFormSubmit(event)">
+              <!-- Upload Mode Container -->
+              <div id="media-mode-upload-container">
+                <div id="media-dropzone" class="media-dropzone" onclick="id('media-file-input').click()" ondragover="handleMediaDragOver(event)" ondragleave="handleMediaDragLeave(event)" ondrop="handleMediaDrop(event)">
+                  <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                  <div class="dropzone-text"><strong>Clique ou arraste</strong> seu arquivo aqui</div>
+                  <div class="dropzone-hint">Imagens (JPG, PNG, WEBP), Vídeos (MP4), Áudios (MP3, OGG) ou PDFs até 50MB</div>
+                  <input type="file" id="media-file-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" style="display:none;" onchange="handleMediaFileSelect(event)">
+                </div>
+
+                <div id="media-file-preview-box" class="media-file-preview-box" style="display:none;">
+                  <div class="mfp-info">
+                    <div id="mfp-thumbnail-container" class="mfp-thumb"></div>
+                    <div class="mfp-details">
+                      <span id="mfp-name" class="mfp-name">arquivo.png</span>
+                      <span id="mfp-size" class="mfp-size">1.2 MB</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-trocar-file" onclick="clearSelectedMediaFile()">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> Trocar
+                  </button>
+                </div>
+              </div>
+
+              <!-- URL Mode Container -->
+              <div id="media-mode-url-container" style="display:none;">
+                <div class="form-group">
+                  <label for="media-url"><i class="fa-solid fa-link"></i> URL Pública Direta</label>
+                  <input type="url" id="media-url" placeholder="https://dominio.com/foto_imovel.jpg">
+                  <span class="field-hint">Insira o link público direto para a imagem, vídeo ou documento.</span>
+                </div>
+              </div>
+
+              <div class="form-group mt-12">
+                <label for="media-trigger-value"><i class="fa-solid fa-tag"></i> Tag de Disparo (Trigger Key)</label>
+                <input type="text" id="media-trigger-value" required placeholder="Ex: decorado_video, foto_fachada, catalogo_pdf">
+                <span class="field-hint">A IA envia a mídia usando: <code>[SEND_MEDIA: tag_acima]</code></span>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="media-type"><i class="fa-solid fa-layer-group"></i> Tipo de Mídia</label>
+                  <select id="media-type">
+                    <option value="image">Imagem (JPG, PNG, WEBP)</option>
+                    <option value="video">Vídeo (MP4, MOV)</option>
+                    <option value="audio">Áudio (MP3, OGG, WAV)</option>
+                    <option value="document">Documento / PDF</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="media-caption"><i class="fa-solid fa-closed-captioning"></i> Legenda no WhatsApp (Opcional)</label>
+                  <input type="text" id="media-caption" placeholder="Ex: Segue o vídeo do decorado...">
+                </div>
+              </div>
+
+              <div class="form-actions mt-12">
+                <button type="submit" id="media-submit-btn" class="btn-accent">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> <span id="media-submit-text">Cadastrar Mídia</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="glass list-card">
+            <div class="list-card-header">
+              <h3><i class="fa-solid fa-folder-open"></i> Mídias Disponíveis</h3>
+              <span id="media-count-badge" class="badge-count">0</span>
+            </div>
+            <div id="media-list" class="scrollable-list">
+              <div class="empty-state"><i class="fa-solid fa-photo-film"></i><p>Nenhuma mídia cadastrada ainda.</p></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: ANALYTICS ======================== -->
+      <section id="page-analytics" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-chart-line"></i> Analytics Comercial</h2>
+            <p>Monitore o desempenho do SDR, a jornada dos leads e a evolução das estratégias.</p>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card glass">
+            <div class="card-icon blue"><i class="fa-solid fa-bolt"></i></div>
+            <div class="card-data">
+              <span class="card-label">Total de Interações</span>
+              <h2 id="metric-interactions" class="card-value">–</h2>
+            </div>
+          </div>
+          <div class="metric-card glass">
+            <div class="card-icon green"><i class="fa-solid fa-user-check"></i></div>
+            <div class="card-data">
+              <span class="card-label">Leads Ativos</span>
+              <h2 id="metric-leads" class="card-value">–</h2>
+            </div>
+          </div>
+          <div class="metric-card glass">
+            <div class="card-icon purple"><i class="fa-solid fa-percent"></i></div>
+            <div class="card-data">
+              <span class="card-label">Taxa de Resposta SDR</span>
+              <h2 id="metric-ratio" class="card-value">–</h2>
+            </div>
+          </div>
+          <div class="metric-card glass">
+            <div class="card-icon orange"><i class="fa-solid fa-pen-nib"></i></div>
+            <div class="card-data">
+              <span class="card-label">Média de Palavras</span>
+              <h2 id="metric-words" class="card-value">–</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="chart-card glass">
+            <h3>Funil de Objetivos Comerciais</h3>
+            <p class="chart-subtitle">Quantos leads alcançaram cada objetivo da jornada de vendas</p>
+            <div id="objectives-chart-container" class="svg-chart-container"></div>
+          </div>
+          <div class="chart-card glass">
+            <h3>Distribuição de Estratégias</h3>
+            <p class="chart-subtitle">Estratégias comportamentais adotadas pelo SDR</p>
+            <div id="strategies-chart-container" class="svg-chart-container"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================== PAGE: SETTINGS ======================== -->
+      <section id="page-settings" class="page">
+
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-gear"></i> Configurações da Conta</h2>
+            <p>Gerencie sua conta, empresas e integrações.</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+
+          <!-- Account -->
+          <div class="glass settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-user-circle"></i> Minha Conta</div>
+            <div class="settings-user-display">
+              <div class="settings-avatar" id="settings-avatar">U</div>
+              <div>
+                <strong id="settings-user-name">–</strong>
+                <span class="text-muted" id="settings-user-email">–</span>
+                <span class="plan-badge" id="settings-user-plan">Free</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Limites e Uso do Plano -->
+          <div class="glass settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-gauge-high"></i> Uso do Plano & Limites</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:12px;">Acompanhe a utilização dos seus recursos contratados.</p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div class="settings-info-row">
+                <span>Empresas (Workspaces):</span>
+                <strong id="settings-usage-tenants">1 / 1</strong>
+              </div>
+              <div class="settings-info-row">
+                <span>Agentes SDR:</span>
+                <strong id="settings-usage-agents">1 / 1</strong>
+              </div>
+              <div class="settings-info-row">
+                <span>Status da Conta:</span>
+                <span class="admin-badge active" id="settings-status-badge">ACTIVE</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modo de Operação do SDR -->
+          <div class="glass settings-card" style="grid-column: 1 / -1;">
+            <div class="settings-card-title"><i class="fa-solid fa-microchip"></i> Modo de Operação da Inteligência Artificial</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:14px;">Defina como a IA conduz as interações: com cognição e funil completo ou qualificação direta e encerramento.</p>
+            
+            <div class="sdr-mode-selector-grid">
+              <label class="sdr-mode-card active" id="settings-mode-card-advanced">
+                <input type="radio" name="settings-sdr-mode" id="settings-sdr-mode-advanced" value="ADVANCED" onchange="setSDRMode(this.value, true)" checked>
+                <div class="mode-card-content">
+                  <div class="mode-card-header">
+                    <span class="mode-badge pro"><i class="fa-solid fa-brain"></i> Modo Avançado</span>
+                    <i class="fa-solid fa-circle-check check-icon"></i>
+                  </div>
+                  <h4>SDR Cognitivo & Funil Completo</h4>
+                  <p>Opera com as 6 camadas: fases do funil, táticas comportamentais, busca vetorial no Playbook (RAG), quebra de objeções e memória contínua.</p>
+                </div>
+              </label>
+
+              <label class="sdr-mode-card" id="settings-mode-card-simple">
+                <input type="radio" name="settings-sdr-mode" id="settings-sdr-mode-simple" value="SIMPLE" onchange="setSDRMode(this.value, true)">
+                <div class="mode-card-content">
+                  <div class="mode-card-header">
+                    <span class="mode-badge simple"><i class="fa-solid fa-bolt"></i> Modo Simples</span>
+                    <i class="fa-solid fa-circle-check check-icon"></i>
+                  </div>
+                  <h4>SDR de Qualificação Direta</h4>
+                  <p>Segue estritamente as perguntas do Fluxo de Qualificação. Ao obter todas as respostas, torna o status do lead <strong>QUALIFIED</strong> e <strong>não responde mais</strong>.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Empresas -->
+          <div class="glass settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-building"></i> Empresas (Tenants)</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:12px;">Gerencie as empresas vinculadas à sua conta.</p>
+            <button class="btn-outline-sm" onclick="openNewTenantModal()">
+              <i class="fa-solid fa-plus"></i> Criar Nova Empresa
+            </button>
+          </div>
+
+          <!-- WhatsApp (Instância Única por Empresa) -->
+          <div class="glass settings-card">
+            <div class="settings-card-title"><i class="fa-brands fa-whatsapp" style="color:var(--success);"></i> Integração WhatsApp (Instância Única)</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:12px;">Conecte o número do WhatsApp da empresa para atendimento automático de leads.</p>
+            
+            <div id="wp-settings-status-box" style="margin-bottom:12px; padding:10px 14px; border-radius:var(--radius-sm); background:rgba(255,255,255,0.02); border:1px solid var(--glass-border);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; color:var(--text-2);">Status da Conexão:</span>
+                <span id="wp-connection-badge" class="admin-badge suspended"><i class="fa-solid fa-circle-dot"></i> Desconectado</span>
+              </div>
+              <div id="wp-instance-info" style="font-size:11px; color:var(--text-muted); margin-top:6px; display:none;">
+                Instância: <code id="wp-instance-name" style="font-size:10px;">tenant-xxx</code> <span id="wp-phone-number" style="margin-left:6px; color:var(--success);"></span>
+              </div>
+            </div>
+
+            <div class="settings-info-row" style="margin-bottom:12px;">
+              <span>Webhook URL:</span>
+              <code id="settings-webhook-url" style="font-size:11px; word-break:break-all;">/webhook/whatsapp/receive</code>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+              <button onclick="openWhatsappModal()" class="btn-accent" id="btn-connect-wp" style="display:inline-flex; gap:6px; align-items:center;">
+                <i class="fa-solid fa-qrcode"></i> Conectar WhatsApp
+              </button>
+              <button onclick="disconnectWhatsapp()" class="btn-danger-outline" id="btn-disconnect-wp" style="display:none; gap:6px; align-items:center;">
+                <i class="fa-solid fa-unlink"></i> Desconectar WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <!-- Governança & Conformidade LGPD -->
+          <div class="glass settings-card" style="grid-column: 1 / -1;">
+            <div class="settings-card-title"><i class="fa-solid fa-shield-halved" style="color:var(--success);"></i> Governança de Privacidade & LGPD (Lei 13.709/2018)</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:14px;">O sistema está em conformidade com as diretrizes da LGPD para proteção e privacidade dos dados dos seus clientes e leads.</p>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-bottom:14px;">
+              <div class="glass" style="padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--success);">
+                <strong style="display:block; font-size:13px; margin-bottom:4px; color:var(--text-1);"><i class="fa-solid fa-handshake-angle" style="color:var(--success);"></i> Opt-out Automático Ativo</strong>
+                <span class="text-muted" style="font-size:11px; line-height:1.4; display:block;">
+                  Se o lead enviar termos como <em>"SAIR"</em>, <em>"CANCELAR"</em>, <em>"PARAR"</em> ou <em>"DESCADASTRO"</em>, a IA pausa o bot, cancela disparos e confirma o respeito à privacidade.
+                </span>
+              </div>
+
+              <div class="glass" style="padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--accent);">
+                <strong style="display:block; font-size:13px; margin-bottom:4px; color:var(--text-1);"><i class="fa-solid fa-file-export" style="color:var(--accent);"></i> Direito de Portabilidade (Art. 18, II)</strong>
+                <span class="text-muted" style="font-size:11px; line-height:1.4; display:block;">
+                  Exporte o relatório completo de dados cadastrais, transcrições e memórias de qualquer lead em 1 clique em formato JSON auditável.
+                </span>
+              </div>
+
+              <div class="glass" style="padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--danger);">
+                <strong style="display:block; font-size:13px; margin-bottom:4px; color:var(--text-1);"><i class="fa-solid fa-trash-can-arrow-up" style="color:var(--danger);"></i> Direito ao Esquecimento (Art. 18, VI)</strong>
+                <span class="text-muted" style="font-size:11px; line-height:1.4; display:block;">
+                  Ao excluir um lead, todos os históricos de mensagens, memórias extraídas, estados cognitivos e traces são purgados permanentemente.
+                </span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:12px;" class="text-muted">
+              <span><i class="fa-solid fa-lock"></i> Criptografia TLS + Hashing bcrypt + JWT com Isolamento Multi-Tenant</span>
+              <span class="admin-badge active" style="font-size:11px;"><i class="fa-solid fa-check"></i> Status: 100% Conforme LGPD</span>
+            </div>
+          </div>
+
+          <!-- Segurança & Alteração de Senha -->
+          <div class="glass settings-card">
+            <div class="settings-card-title"><i class="fa-solid fa-key" style="color:var(--accent);"></i> Segurança & Alteração de Senha</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:14px;">Mantenha sua conta protegida atualizando sua senha de acesso.</p>
+            <form id="form-change-password" onsubmit="changeUserPassword(event)">
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="settings-current-password"><i class="fa-solid fa-lock"></i> Senha Atual</label>
+                <input type="password" id="settings-current-password" required placeholder="Digite sua senha atual" autocomplete="current-password">
+              </div>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="settings-new-password"><i class="fa-solid fa-shield-halved"></i> Nova Senha</label>
+                <input type="password" id="settings-new-password" required minlength="6" placeholder="Mínimo de 6 caracteres" autocomplete="new-password">
+              </div>
+              <div class="form-group" style="margin-bottom:16px;">
+                <label for="settings-confirm-password"><i class="fa-solid fa-check-double"></i> Confirmar Nova Senha</label>
+                <input type="password" id="settings-confirm-password" required minlength="6" placeholder="Repita a nova senha" autocomplete="new-password">
+              </div>
+              <button type="submit" id="btn-submit-change-password" class="btn-accent" style="width:100%; display:flex; justify-content:center; align-items:center; gap:8px;">
+                <i class="fa-solid fa-floppy-disk"></i> Atualizar Minha Senha
+              </button>
+            </form>
+          </div>
+
+          <!-- Perigo -->
+          <div class="glass settings-card danger-card">
+            <div class="settings-card-title" style="color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Perigo</div>
+            <p class="text-muted" style="font-size:13px; margin-bottom:12px;">Ações irreversíveis. Tenha certeza antes de prosseguir.</p>
+            <button class="btn-danger-outline" id="btn-logout-danger" onclick="logout()">
+              <i class="fa-solid fa-right-from-bracket"></i> Encerrar Sessão
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ============================================================
+           PAGE: Admin Global
+      ============================================================ -->
+      <section id="page-admin" class="page">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title"><i class="fa-solid fa-crown" style="color:var(--warning);"></i> Painel de Administração Global</h1>
+            <p class="page-subtitle">Gerencie o motor de IA global (OpenAI / Gemini), libere acessos e controle todos os clientes.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn-accent" onclick="openAdminCreateUserModal()">
+              <i class="fa-solid fa-user-plus"></i> Novo Usuário
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-container">
+          <!-- Summary Metrics Cards -->
+          <div class="stats-grid">
+            <div class="stat-card glass">
+              <div class="stat-card-header">
+                <span class="stat-label">Total de Clientes / Usuários</span>
+                <div class="stat-icon" style="background:var(--accent-dim); color:var(--accent);"><i class="fa-solid fa-users"></i></div>
+              </div>
+              <div class="stat-value" id="admin-stat-users">0</div>
+              <div class="stat-trend neutral"><i class="fa-solid fa-shield"></i> Cadastrados no sistema</div>
+            </div>
+
+            <div class="stat-card glass">
+              <div class="stat-card-header">
+                <span class="stat-label">Total de Workspaces (Empresas)</span>
+                <div class="stat-icon" style="background:var(--info-dim); color:var(--info);"><i class="fa-solid fa-building"></i></div>
+              </div>
+              <div class="stat-value" id="admin-stat-tenants">0</div>
+              <div class="stat-trend neutral"><i class="fa-solid fa-layer-group"></i> Ambientes isolados</div>
+            </div>
+
+            <div class="stat-card glass">
+              <div class="stat-card-header">
+                <span class="stat-label">Total de Agentes SDR Ativos</span>
+                <div class="stat-icon" style="background:var(--purple-dim); color:var(--purple);"><i class="fa-solid fa-robot"></i></div>
+              </div>
+              <div class="stat-value" id="admin-stat-agents">0</div>
+              <div class="stat-trend neutral"><i class="fa-solid fa-microchip"></i> Personas configuradas</div>
+            </div>
+
+            <div class="stat-card glass">
+              <div class="stat-card-header">
+                <span class="stat-label">Provedor Ativo de IA</span>
+                <div class="stat-icon" style="background:var(--success-dim); color:var(--success);"><i class="fa-solid fa-microchip"></i></div>
+              </div>
+              <div class="stat-value" id="admin-stat-active-provider" style="font-size:20px; color:var(--accent);">Google Gemini</div>
+              <div class="stat-trend positive" id="admin-stat-provider-model"><i class="fa-solid fa-circle-check"></i> gemini-2.5-flash</div>
+            </div>
+          </div>
+
+          <!-- Global AI Provider Settings Card -->
+          <div class="glass form-card" style="margin-bottom:24px; padding:20px 24px; border:1px solid rgba(99, 102, 241, 0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+              <div>
+                <h3 style="display:flex; align-items:center; gap:8px; font-size:16px;">
+                  <i class="fa-solid fa-brain" style="color:var(--accent);"></i> Provedor Global de Inteligência Artificial (IA)
+                </h3>
+                <p class="text-muted" style="font-size:12px; margin-top:2px;">
+                  Escolha entre OpenAI ou Google Gemini para abastecer todo o SDR, memória e estratégias cognitivas.
+                </p>
+              </div>
+              <div id="ai-test-status" style="font-size:12px;"></div>
+            </div>
+
+            <form id="form-admin-ai-settings" onsubmit="saveAdminAISettings(event)">
+              <!-- Provider Selection Selector -->
+              <div class="form-group" style="margin-bottom:18px;">
+                <label style="font-weight:600; font-size:13px; margin-bottom:8px; display:block;">Selecione o Provedor Ativo:</label>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                  
+                  <label class="sdr-mode-card active" id="card-provider-gemini" style="cursor:pointer; padding:14px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="admin-ai-provider" id="radio-provider-gemini" value="GEMINI" onchange="toggleAIProviderUI('GEMINI')" checked>
+                    <div class="mode-card-content">
+                      <div class="mode-card-header">
+                        <span class="mode-badge pro"><i class="fa-brands fa-google"></i> Google Gemini</span>
+                        <i class="fa-solid fa-circle-check check-icon"></i>
+                      </div>
+                      <p style="font-size:11px; margin-top:6px;">Google Gen AI (Gemini 2.5 Flash, 1.5 Flash, 1.5 Pro). Alta velocidade e raciocínio contextual.</p>
+                    </div>
+                  </label>
+
+                  <label class="sdr-mode-card" id="card-provider-openai" style="cursor:pointer; padding:14px; border-radius:var(--radius-sm);">
+                    <input type="radio" name="admin-ai-provider" id="radio-provider-openai" value="OPENAI" onchange="toggleAIProviderUI('OPENAI')">
+                    <div class="mode-card-content">
+                      <div class="mode-card-header">
+                        <span class="mode-badge simple"><i class="fa-solid fa-bolt"></i> OpenAI (ChatGPT)</span>
+                        <i class="fa-solid fa-circle-check check-icon"></i>
+                      </div>
+                      <p style="font-size:11px; margin-top:6px;">GPT-4o Mini, GPT-4o, GPT-4 Turbo. Máxima estabilidade, sem picos de indisponibilidade.</p>
+                    </div>
+                  </label>
+
+                </div>
+              </div>
+
+              <!-- Providers Configuration Grid -->
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:18px;">
+                
+                <!-- Google Gemini Box -->
+                <div class="glass" style="padding:16px; border-radius:var(--radius-sm); border-left:3px solid var(--accent);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <strong style="font-size:13px; color:var(--text-1);"><i class="fa-brands fa-google"></i> Google Gemini API</strong>
+                    <span class="badge-tag" id="gemini-status-tag">Carregando...</span>
+                  </div>
+                  
+                  <div class="form-group" style="margin-bottom:10px;">
+                    <label for="admin-gemini-key" style="font-size:12px;">Chave API (GEMINI_API_KEY)</label>
+                    <input type="password" id="admin-gemini-key" placeholder="Insira a API Key do Google AI Studio">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="admin-gemini-model" style="font-size:12px;">Modelo Gemini</label>
+                    <select id="admin-gemini-model">
+                      <option value="gemini-2.5-flash">gemini-2.5-flash (Recomendado - Mais rápido e recente)</option>
+                      <option value="gemini-1.5-flash">gemini-1.5-flash (Padrão estável)</option>
+                      <option value="gemini-1.5-pro">gemini-1.5-pro (Raciocínio complexo)</option>
+                      <option value="gemini-2.0-flash">gemini-2.0-flash (Experimental)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- OpenAI Box -->
+                <div class="glass" style="padding:16px; border-radius:var(--radius-sm); border-left:3px solid var(--success);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <strong style="font-size:13px; color:var(--text-1);"><i class="fa-solid fa-cube"></i> OpenAI API (ChatGPT)</strong>
+                    <span class="badge-tag" id="openai-status-tag">Carregando...</span>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom:10px;">
+                    <label for="admin-openai-key" style="font-size:12px;">Chave API (OPENAI_API_KEY)</label>
+                    <input type="password" id="admin-openai-key" placeholder="sk-proj-...">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="admin-openai-model" style="font-size:12px;">Modelo OpenAI</label>
+                    <select id="admin-openai-model">
+                      <option value="gpt-4o-mini">gpt-4o-mini (Recomendado - Ultrarrápido e econômico)</option>
+                      <option value="gpt-4o">gpt-4o (Mais potente / Omni)</option>
+                      <option value="gpt-4-turbo">gpt-4-turbo</option>
+                      <option value="o3-mini">o3-mini (Raciocínio lógico avançado)</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Actions row -->
+              <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button type="button" class="btn-outline-sm" id="btn-test-ai-conn" onclick="testAdminAIConnection()" style="display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-plug"></i> Testar Conexão do Provedor Ativo
+                </button>
+                <button type="submit" class="btn-accent" id="btn-save-ai-settings" style="display:flex; align-items:center; gap:6px;">
+                  <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações Globais de IA
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Users Management Table -->
+          <div class="glass form-card admin-table-card">
+            <div class="admin-header-row" style="margin-bottom:16px;">
+              <div>
+                <h3><i class="fa-solid fa-users-gear"></i> Gestão de Contas e Limites</h3>
+                <p class="text-muted" style="font-size:12px;">Altere papéis, planos, limites de agentes e empresas diretamente nos campos abaixo e clique em Salvar.</p>
+              </div>
+              <div class="admin-search-bar">
+                <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                <input type="text" id="admin-search-input" placeholder="Buscar por nome ou e-mail..." oninput="filterAdminUsers(this.value)">
+              </div>
+            </div>
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Papel (Role)</th>
+                  <th>Plano</th>
+                  <th>Max Empresas</th>
+                  <th>Max Agentes</th>
+                  <th>Status</th>
+                  <th>Workspaces Criados</th>
+                  <th style="text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body">
+                <tr>
+                  <td colspan="8" style="text-align:center; padding:30px;" class="text-muted">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Carregando usuários...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Human Correction
+============================================================ -->
+
+  <!-- MODAL: Whatsapp Connect -->
+  <div id="modal-whatsapp" class="modal-backdrop" style="display:none;">
+    <div class="modal-card glass" style="max-width:400px; text-align:center;">
+      <div class="modal-header">
+        <h3><i class="fa-brands fa-whatsapp"></i> Conectar Aparelho</h3>
+        <button class="modal-close" onclick="closeWhatsappModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; align-items:center;">
+        <p class="text-muted" style="font-size:13px; margin-bottom:15px;">Abra o WhatsApp no celular > Aparelhos Conectados > Conectar um aparelho.</p>
+        
+        <div id="qr-container" style="background:white; padding:15px; border-radius:8px; display:inline-block; min-height:250px; min-width:250px; display:flex; align-items:center; justify-content:center;">
+          <div class="loader" id="qr-loader"></div>
+          <img id="qr-image" src="" alt="QR Code" style="display:none; width:250px; height:250px;">
+        </div>
+        
+        <p id="qr-status" class="text-muted" style="margin-top:15px; font-weight:bold;">Gerando QR Code...</p>
+      </div>
+    </div>
+  </div>
+
+<div id="modal-correction" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-user-pen"></i> Corrigir Resposta do SDR</h3>
+      <button class="modal-close" id="btn-close-correction"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="correction-box">
+        <strong>Contexto (Mensagem do Lead):</strong>
+        <p id="correction-context-text" class="text-muted"></p>
+      </div>
+      <div class="correction-box error-box">
+        <strong>Resposta do SDR (Como errou):</strong>
+        <p id="correction-original-text"></p>
+      </div>
+      <form id="correction-form">
+        <div class="form-group">
+          <label><strong>Resposta Correta (Como deveria ter falado):</strong></label>
+          <textarea id="correction-input" required rows="3" placeholder="Escreva como o SDR deveria ter respondido..."></textarea>
+        </div>
+        <div class="form-group">
+          <label><strong>Feedback e Raciocínio (Por que corrigir?):</strong></label>
+          <input type="text" id="correction-feedback" required placeholder="Ex: Não explicou o fluxo de entrada de 10%">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-correction" class="btn-secondary-outline">Cancelar</button>
+          <button type="submit" class="btn-accent"><i class="fa-solid fa-save"></i> Salvar e Ensinar SDR</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Admin Create User
+============================================================ -->
+<div id="modal-admin-user" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass" style="max-width:520px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-user-plus" style="color:var(--accent);"></i> Cadastrar Novo Usuário</h3>
+      <button class="modal-close" onclick="closeAdminCreateUserModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="form-admin-create-user" onsubmit="submitAdminCreateUser(event)">
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+        <div class="form-group">
+          <label>Nome Completo *</label>
+          <input type="text" id="admin-new-name" required placeholder="Ex: Roberto Silva">
+        </div>
+        <div class="form-group">
+          <label>E-mail de Acesso *</label>
+          <input type="email" id="admin-new-email" required placeholder="roberto@empresa.com">
+        </div>
+        <div class="form-group">
+          <label>Senha Inicial (mínimo 6 caracteres) *</label>
+          <input type="password" id="admin-new-password" required placeholder="••••••••">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Nível de Acesso (Role)</label>
+            <select id="admin-new-role">
+              <option value="USER" selected>USER (Cliente)</option>
+              <option value="ADMIN">ADMIN (Gestor Global)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Plano</label>
+            <select id="admin-new-plan">
+              <option value="free" selected>Free (Gratuito)</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Limite de Empresas (Workspaces)</label>
+            <input type="number" id="admin-new-max-tenants" min="1" max="100" value="1">
+          </div>
+          <div class="form-group">
+            <label>Limite de Agentes SDR</label>
+            <input type="number" id="admin-new-max-agents" min="1" max="100" value="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Status Inicial</label>
+          <select id="admin-new-status">
+            <option value="ACTIVE" selected>ACTIVE (Liberado)</option>
+            <option value="SUSPENDED">SUSPENDED (Bloqueado)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:10px;">
+        <button type="button" class="btn-secondary-outline" onclick="closeAdminCreateUserModal()">Cancelar</button>
+        <button type="submit" class="btn-accent"><i class="fa-solid fa-check"></i> Criar Conta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Lead Details & Edit (Tags & Custom Fields)
+============================================================ -->
+<div id="modal-lead-details" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass" style="max-width:650px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-header">
+      <h3 id="modal-lead-title"><i class="fa-solid fa-user-pen" style="color:var(--accent);"></i> Detalhes do Lead</h3>
+      <button class="modal-close" onclick="closeLeadModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="form-lead-details" onsubmit="submitLeadDetails(event)">
+      <input type="hidden" id="lead-edit-id">
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> Nome Completo</label>
+            <input type="text" id="lead-form-name" placeholder="Ex: Rayckly Santos">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-phone"></i> WhatsApp / Telefone *</label>
+            <input type="tel" id="lead-form-phone" required placeholder="Ex: 559491155177">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fa-solid fa-envelope"></i> E-mail</label>
+            <input type="email" id="lead-form-email" placeholder="cliente@email.com">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-signal"></i> Status do Lead</label>
+            <select id="lead-form-status">
+              <option value="NEW">Novo (NEW)</option>
+              <option value="ACTIVE">Em Atendimento (ACTIVE)</option>
+              <option value="QUALIFIED">Qualificado (QUALIFIED)</option>
+              <option value="DISQUALIFIED">Desqualificado (DISQUALIFIED)</option>
+              <option value="HANDOFF">Atendimento Humano (HANDOFF)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tags Manager -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-tags"></i> Tags do Lead</label>
+          <div class="tags-input-container">
+            <div id="lead-tags-chips" class="tags-chips-wrap"></div>
+            <div class="tag-input-row">
+              <input type="text" id="lead-new-tag-input" placeholder="Digite uma tag (ex: VIP, Quente) e pressione Enter" onkeydown="handleTagInputKey(event)">
+              <button type="button" class="btn-sm-accent" onclick="addCurrentTagInput()"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Fields Manager -->
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="margin:0;"><i class="fa-solid fa-sliders"></i> Campos Personalizados (Chave & Valor)</label>
+            <button type="button" class="btn-xs-outline" onclick="addCustomFieldRow()">
+              <i class="fa-solid fa-plus"></i> Adicionar Campo
+            </button>
+          </div>
+          <p class="text-muted" style="font-size:12px; margin-bottom:8px;">Registre dados específicos como modelo de interesse, orçamento, cidade, etc.</p>
+          <div id="custom-fields-container" class="custom-fields-list">
+            <!-- Dynamic rows inserted here -->
+          </div>
+        </div>
+
+        <!-- Internal Notes -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-note-sticky"></i> Anotações Internas / Observações</label>
+          <textarea id="lead-form-notes" rows="3" placeholder="Informações adicionais relevantes sobre este contato..."></textarea>
+        </div>
+
+      </div>
+      <div class="modal-actions" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+        <button type="button" class="btn-outline-sm" id="btn-export-lead-lgpd" onclick="exportLeadLGPD()" title="Exportar dossiê completo deste lead em JSON conforme a LGPD (Lei 13.709/2018)">
+          <i class="fa-solid fa-file-shield" style="color:var(--accent-light);"></i> Exportar Dados (LGPD)
+        </button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-secondary-outline" onclick="closeLeadModal()">Cancelar</button>
+          <button type="submit" class="btn-accent"><i class="fa-solid fa-floppy-disk"></i> Salvar Lead</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: AI Trace Details & Reasoning Audit
+============================================================ -->
+<div id="modal-trace-details" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass" style="max-width:750px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-microscope" style="color:var(--accent);"></i> Auditoria Completa do Raciocínio</h3>
+      <button class="modal-close" onclick="closeTraceModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="modal-trace-body" style="display:flex; flex-direction:column; gap:16px;">
+      <!-- Content populated dynamically -->
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button type="button" class="btn-accent" onclick="closeTraceModal()">Fechar Auditoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: New Tenant
+============================================================ -->
+<div id="modal-tenant" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass modal-sm">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-building-circle-plus"></i> Nova Empresa</h3>
+      <button class="modal-close" id="btn-close-tenant"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="tenant-form">
+        <div class="form-group">
+          <label for="tenant-name-input">Nome da Empresa</label>
+          <input type="text" id="tenant-name-input" required placeholder="Ex: Imobiliária Prime, Speed Motors...">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-tenant" class="btn-secondary-outline">Cancelar</button>
+          <button type="submit" class="btn-accent"><i class="fa-solid fa-circle-check"></i> Criar Empresa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

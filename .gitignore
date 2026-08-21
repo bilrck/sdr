@@ -1,0 +1,43 @@
+﻿# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Uploaded user media (preserve folder with .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Temporary and test scratch files
+scratch/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary patch scripts
+patch_*.js
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
