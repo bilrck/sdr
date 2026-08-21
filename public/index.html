@@ -1048,6 +1048,62 @@
           </div>
         </div>
 
+        <!-- Auto Training Tab -->
+        <div id="tab-training-auto" class="inner-tab-content">
+          <div class="knowledge-grid">
+            <div class="glass form-card">
+              <h3><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent);"></i> Treino Inteligente com IA</h3>
+              <p class="field-hint" style="margin-top:4px;">Cole transcrições de conversas, manuais em texto corrido, catálogos de produtos ou FAQ. A IA irá extrair, estruturar e gerar automaticamente os blocos de conhecimento semânticos.</p>
+              <form id="training-auto-form" class="config-form mt-16">
+                <div class="form-group">
+                  <label for="training-auto-title"><i class="fa-solid fa-heading"></i> Título ou Origem do Material</label>
+                  <input type="text" id="training-auto-title" required placeholder="Ex: Transcrição da Reunião de Vendas ou Manual do Empreendimento">
+                </div>
+                <div class="form-group">
+                  <label for="training-auto-content"><i class="fa-solid fa-file-lines"></i> Conteúdo Bruto / Texto Completo</label>
+                  <textarea id="training-auto-content" required rows="10" placeholder="Cole aqui o texto livre, manual do produto, transcrição de áudio ou documento completo..."></textarea>
+                  <span class="field-hint">A IA processará o texto em background e criará os chunks semânticos com embeddings vetoriais.</span>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-accent">
+                    <span>Processar com IA</span><i class="fa-solid fa-wand-magic-sparkles"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="glass list-card">
+              <div class="list-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3><i class="fa-solid fa-list-check"></i> Sessões Processadas</h3>
+                <button class="btn-secondary-outline" style="padding:4px 10px; font-size:12px;" onclick="loadTrainingSessions()">
+                  <i class="fa-solid fa-rotate-right"></i> Atualizar
+                </button>
+              </div>
+              <div id="training-sessions-list" class="scrollable-list mt-16">
+                <div class="empty-state"><i class="fa-solid fa-brain"></i><p>Nenhuma sessão processada ainda. Envie um material ao lado.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reflections Tab -->
+        <div id="tab-reflections" class="inner-tab-content">
+          <div class="glass list-card full-width">
+            <div class="list-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h3><i class="fa-solid fa-lightbulb" style="color:#f59e0b;"></i> Reflexões & Autoaprendizado Contínuo</h3>
+                <p class="text-muted" style="font-size:13px;">O SDR reflete sobre conversas ricas com leads para extrair padrões de objeções, comportamento de compra e auto-aprimorar a estratégia global.</p>
+              </div>
+              <button class="btn-secondary-outline" onclick="loadReflections()">
+                <i class="fa-solid fa-rotate-right"></i> Atualizar Reflexões
+              </button>
+            </div>
+            <div id="reflections-list" class="scrollable-list mt-16">
+              <div class="empty-state"><i class="fa-solid fa-lightbulb"></i><p>Nenhuma reflexão automática até o momento. O SDR gera reflexões após interações com os leads.</p></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Corrections Tab -->
         <div id="tab-corrections" class="inner-tab-content">
           <div class="glass list-card full-width">

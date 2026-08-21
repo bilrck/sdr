@@ -8,20 +8,15 @@ export class TrainingEngine {
    * Ele usa a IA para fatiar o conteúdo em chunks ricos e independentes (semânticos).
    */
   public async processTrainingSession(sessionId: string): Promise<void> {
-    const sessions = await repo.getTrainingSessions(''); // Gambiarra provisória, na real pegar pelo ID direto no banco se puder, mas vou arrumar isso
-    // Buscar direto do prisma pra não ter erro de tipagem no fallback de getTrainingSessions que espera tenantId
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
-    const session = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
-    
+    const session = await repo.getTrainingSessionById(sessionId);
     if (!session || session.processed) return;
 
     try {
-      // Chunking Inteligente usando Gemini
+      // Chunking Inteligente usando Gemini / OpenAI
       const prompt = `
-Você é um extrator de conhecimento. Analise o seguinte texto bruto (pode ser uma transcrição de conversa, faq, ou documento de produto).
+Você é um extrator de conhecimento para vendas e atendimento. Analise o seguinte texto bruto (pode ser uma transcrição de conversa, faq, roteiro de vendas ou documento de produto).
 Extraia os fatos, regras, objeções e informações importantes em formato de "pedaços de conhecimento" (chunks).
-Cada chunk deve ser uma afirmação independente, clara e conter contexto suficiente para ser entendida isoladamente.
+Cada chunk deve ser uma afirmação independente, clara e conter contexto suficiente para ser entendida isoladamente pelo SDR.
 Não perca nenhuma informação útil.
 
 Texto bruto:
@@ -55,8 +50,6 @@ Retorne um JSON com o formato:
 
     } catch (e) {
       console.error(`[TrainingEngine] Failed to process training session ${sessionId}`, e);
-    } finally {
-      await prisma.$disconnect();
     }
   }
 }

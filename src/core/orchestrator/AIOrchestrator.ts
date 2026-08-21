@@ -9,6 +9,7 @@ import { strategyEngine } from '../../engines/strategy/StrategyEngine.js';
 import { learningEngine } from '../../engines/learning/LearningEngine.js';
 import { geminiService } from '../ai/GeminiService.js';
 import { integrationEngine } from '../../engines/integration/IntegrationEngine.js';
+import { reflectionEngine } from '../../engines/reflection/ReflectionEngine.js';
 
 export class AIOrchestrator {
   private static instance: AIOrchestrator;
@@ -239,6 +240,13 @@ SDR (${sdrConfig.personaName}): [Gere a resposta adequada aqui, sem prefixar com
         phone,
         rawContent: rawResponse,
       });
+
+      // 12. Trigger asynchronous self-reflection / continuous learning
+      if (['QUALIFIED', 'DISQUALIFIED', 'HANDOFF'].includes(nextStatus || '') || recentHistory.length >= 4) {
+        reflectionEngine.reflectOnConversation(tenantId, leadId).catch(err => {
+          console.warn('[AIOrchestrator] Self-reflection warning:', err);
+        });
+      }
     } catch (error) {
       console.error(`[AIOrchestrator] Error during orchestration pipeline:`, error);
     }
@@ -389,6 +397,13 @@ Responda em formato JSON estruturado com os campos:
       });
 
       console.log(`[AIOrchestrator] [Modo Simples] Resposta gerada com sucesso: "${result.response}"`);
+
+      // Disparar reflexão automática em background caso lead tenha sido qualificado ou histórico rico
+      if (result.isQualified || recentHistory.length >= 4) {
+        reflectionEngine.reflectOnConversation(tenantId, leadId).catch(err => {
+          console.warn('[AIOrchestrator] Simple mode reflection warning:', err);
+        });
+      }
 
       // Publicar evento para o Humanizer e OutboundConnector
       eventBus.publish<ResponseGeneratedPayload>(EVENT_TYPES.RESPONSE_GENERATED, tenantId, {

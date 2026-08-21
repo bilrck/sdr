@@ -1726,7 +1726,9 @@ export class Repository {
 
   // --- MISSING METHODS ---
   public async getTrainingSessions(tenantId: string): Promise<any[]> {
-    if (this.useMemory()) return [];
+    if (this.useMemory()) {
+      return this.memoryDb.trainingSessions.filter(s => s.tenantId === tenantId);
+    }
     return dbService.prisma.trainingSession.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
@@ -1734,8 +1736,17 @@ export class Repository {
     });
   }
 
+  public async getTrainingSessionById(id: string): Promise<any | null> {
+    if (this.useMemory()) {
+      return this.memoryDb.trainingSessions.find(s => s.id === id) || null;
+    }
+    return dbService.prisma.trainingSession.findUnique({ where: { id } });
+  }
+
   public async getAgentReflections(tenantId: string): Promise<any[]> {
-    if (this.useMemory()) return [];
+    if (this.useMemory()) {
+      return this.memoryDb.agentReflections.filter(r => r.tenantId === tenantId);
+    }
     return dbService.prisma.agentReflection.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },

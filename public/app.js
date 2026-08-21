@@ -1424,58 +1424,90 @@ async function loadAnalyticsPage() {
 // ==========================================
 
 async function loadTrainingSessions() {
-  const sessions = await api.get('/tenants/' + state.tenantId + '/training-sessions');
   const container = document.getElementById('training-sessions-list');
   if (!container) return;
-  container.innerHTML = '';
-  if (!sessions || sessions.length === 0) {
-    container.innerHTML = '<p class="field-hint">Nenhuma sessão processada ainda.</p>';
-    return;
+  if (!state.tenantId) return;
+
+  try {
+    const sessions = await api.get('/tenants/' + state.tenantId + '/training-sessions');
+    container.innerHTML = '';
+    if (!sessions || sessions.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-brain"></i><p>Nenhuma sessão processada ainda. Envie um material ao lado para treinar a IA.</p></div>';
+      return;
+    }
+    sessions.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'playbook-item';
+      div.style.marginBottom = '12px';
+      const isDone = s.processed;
+      div.innerHTML = `
+        <div class="pb-info" style="width:100%;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div class="pb-title" style="font-size:14px; font-weight:600; color:var(--text-1);"><i class="fa-solid fa-file-lines" style="color:var(--accent); margin-right:6px;"></i>${escHtml(s.title || 'Sessão de Treino')}</div>
+            <span class="tag-chip" style="font-size:11px; padding:2px 8px; ${isDone ? 'color:#10b981; border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.1);' : 'color:#f59e0b; border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.1);'}">
+              <i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-spinner fa-spin'}" style="margin-right:4px;"></i>${isDone ? 'Vetorizado com IA' : 'Processando...'}
+            </span>
+          </div>
+          <p style="font-size:12px; color:var(--text-2); margin:0 0 6px 0; line-height:1.4; max-height:48px; overflow:hidden; text-overflow:ellipsis;">${escHtml((s.content || '').substring(0, 180))}...</p>
+          <div class="pb-stats" style="font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between;">
+            <span>Tipo: <strong>${escHtml((s.type || 'texto').toUpperCase())}</strong></span>
+            <span>${formatDate(s.createdAt)}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('[Training] Load error:', err);
   }
-  sessions.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'playbook-item';
-    div.innerHTML = `
-      <div class="pb-info">
-        <div class="pb-title">${escHtml(s.title || '')}</div>
-        <div class="pb-stats">Status: ${s.processed ? 'Concluído' : 'Processando...'} | Tipo: ${escHtml(s.type || '')}</div>
-      </div>
-    `;
-    container.appendChild(div);
-  });
 }
 
 async function loadReflections() {
-  const refs = await api.get('/tenants/' + state.tenantId + '/reflections');
   const container = document.getElementById('reflections-list');
   if (!container) return;
-  container.innerHTML = '';
-  if (!refs || refs.length === 0) {
-    container.innerHTML = '<p class="field-hint">Nenhuma reflexão automática até o momento. O SDR gera reflexões após interações ricas com os leads.</p>';
-    return;
-  }
-  
-  refs.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'glass form-card';
-    div.style.marginBottom = '12px';
-    let insightsHtml = '';
-    try {
-      const ins = JSON.parse(r.insights);
-      if (Array.isArray(ins)) {
-        insightsHtml = '<ul style="padding-left:16px; margin-top:8px; font-size:12px; color:var(--text-2);">' + 
-                       ins.map(i => '<li>' + escHtml(String(i)) + '</li>').join('') + 
-                       '</ul>';
-      }
-    } catch(e) {}
+  if (!state.tenantId) return;
+
+  try {
+    const refs = await api.get('/tenants/' + state.tenantId + '/reflections');
+    container.innerHTML = '';
+    if (!refs || refs.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-lightbulb"></i><p>Nenhuma reflexão automática até o momento.<br><span style="font-size:12px; color:var(--text-muted);">O SDR gera reflexões automáticas após conversas com leads reais para aprender padrões e objeções.</span></p></div>';
+      return;
+    }
     
-    div.innerHTML = `
-      <div style="font-size:11px; color:var(--accent); font-weight:600; margin-bottom:4px;">ID do Lead: ${escHtml((r.leadId || '').substring(0,8))}...</div>
-      <p style="font-size:13px; color:var(--text-1);">${escHtml(r.summary || '')}</p>
-      ${insightsHtml}
-    `;
-    container.appendChild(div);
-  });
+    refs.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'glass form-card';
+      div.style.marginBottom = '14px';
+      div.style.borderLeft = '3px solid #f59e0b';
+      let insightsHtml = '';
+      try {
+        const ins = typeof r.insights === 'string' ? JSON.parse(r.insights) : r.insights;
+        if (Array.isArray(ins) && ins.length > 0) {
+          insightsHtml = `
+            <div style="margin-top:10px; padding:10px 14px; background:rgba(245,158,11,0.06); border-radius:8px; border:1px solid rgba(245,158,11,0.15);">
+              <div style="font-size:12px; font-weight:600; color:#f59e0b; margin-bottom:4px;"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px;"></i>Padrões & Aprendizados Extraídos:</div>
+              <ul style="padding-left:18px; margin:0; font-size:12px; color:var(--text-1); line-height:1.5;">
+                ${ins.map(i => `<li style="margin-bottom:2px;">${escHtml(String(i))}</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+      } catch(e) {}
+      
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-size:12px; color:var(--accent); font-weight:600;"><i class="fa-solid fa-user" style="margin-right:6px;"></i>Lead: ${escHtml((r.leadId || '').substring(0,8))}...</div>
+          <span style="font-size:11px; color:var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${formatDate(r.createdAt)}</span>
+        </div>
+        <div style="font-size:13px; color:var(--text-1); line-height:1.5;"><strong>Resumo da Interação:</strong> ${escHtml(r.summary || '')}</div>
+        ${insightsHtml}
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error('[Reflections] Load error:', err);
+  }
 }
 
 // ============================================================
@@ -1887,9 +1919,11 @@ function setupInnerTabs() {
 
       // Load data for the newly activated tab
       if (state.tenantId) {
-        if (tabId === 'tab-playbooks')   await loadKnowledge();
-        if (tabId === 'tab-corrections') await loadCorrections();
-        if (tabId === 'tab-brain')       await loadBrainStats();
+        if (tabId === 'tab-playbooks')     await loadKnowledge();
+        if (tabId === 'tab-training-auto') await loadTrainingSessions();
+        if (tabId === 'tab-reflections')   await loadReflections();
+        if (tabId === 'tab-corrections')   await loadCorrections();
+        if (tabId === 'tab-brain')         await loadBrainStats();
       }
     });
   });
