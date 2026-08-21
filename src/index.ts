@@ -25,7 +25,7 @@ dotenv.config();
 const REQUIRED_ENV = ['GEMINI_API_KEY', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
 if (missingEnv.length > 0) {
-  console.warn(`[Config Warning] Variáveis de ambiente críticas ausentes: ${missingEnv.join(', ')}`);
+  console.warn(`[Config Warning] VariÃ¡veis de ambiente crÃ­ticas ausentes: ${missingEnv.join(', ')}`);
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,7 +50,7 @@ server.register(rateLimit, {
   skipOnError: false,
   keyGenerator: (req) => `${req.ip}-${req.url.startsWith('/auth') ? 'auth' : 'api'}`,
   errorResponseBuilder: (req, context) => {
-    return { error: 'Limite de requisições atingido. Aguarde um momento.' };
+    return { error: 'Limite de requisiÃ§Ãµes atingido. Aguarde um momento.' };
   },
 });
 
@@ -100,12 +100,12 @@ server.addHook('preHandler', async (request, reply) => {
 
   const token = authService.extractTokenFromHeader(request.headers.authorization);
   if (!token) {
-    return reply.status(401).send({ error: 'Não autorizado. Faça login para continuar.' });
+    return reply.status(401).send({ error: 'NÃ£o autorizado. FaÃ§a login para continuar.' });
   }
 
   const decoded = authService.verifyToken(token);
   if (!decoded) {
-    return reply.status(401).send({ error: 'Token inválido ou expirado. Faça login novamente.' });
+    return reply.status(401).send({ error: 'Token invÃ¡lido ou expirado. FaÃ§a login novamente.' });
   }
 
   (request as any).user = decoded;
@@ -116,7 +116,7 @@ server.addHook('preHandler', async (request, reply) => {
     const requestedTenantId = tenantMatch[1];
     const hasAccess = await repo.userHasAccessToTenant(decoded.userId, requestedTenantId);
     if (!hasAccess) {
-      return reply.status(403).send({ error: 'Acesso negado. Você não tem permissão para acessar esta empresa.' });
+      return reply.status(403).send({ error: 'Acesso negado. VocÃª nÃ£o tem permissÃ£o para acessar esta empresa.' });
     }
   }
 });
@@ -130,7 +130,7 @@ server.post('/auth/register', async (request, reply) => {
   const body = request.body as { email: string; name: string; password: string };
 
   if (!body.email || !body.name || !body.password) {
-    return reply.status(400).send({ error: 'Email, nome e senha são obrigatórios.' });
+    return reply.status(400).send({ error: 'Email, nome e senha sÃ£o obrigatÃ³rios.' });
   }
   if (body.password.length < 6) {
     return reply.status(400).send({ error: 'A senha deve ter pelo menos 6 caracteres.' });
@@ -138,7 +138,7 @@ server.post('/auth/register', async (request, reply) => {
 
   const existing = await repo.getUserByEmail(body.email);
   if (existing) {
-    return reply.status(409).send({ error: 'Este e-mail já está cadastrado.' });
+    return reply.status(409).send({ error: 'Este e-mail jÃ¡ estÃ¡ cadastrado.' });
   }
 
   const passwordHash = await authService.hashPassword(body.password);
@@ -150,7 +150,7 @@ server.post('/auth/register', async (request, reply) => {
 
   
   if (user.status === 'SUSPENDED') {
-    return reply.status(403).send({ error: 'Sua conta está suspensa. Contate o suporte.' });
+    return reply.status(403).send({ error: 'Sua conta estÃ¡ suspensa. Contate o suporte.' });
   }
 
   const token = authService.generateToken(user.id, user.email, user.name);
@@ -166,7 +166,7 @@ server.post('/auth/login', async (request, reply) => {
   const body = request.body as { email: string; password: string };
 
   if (!body.email || !body.password) {
-    return reply.status(400).send({ error: 'Email e senha são obrigatórios.' });
+    return reply.status(400).send({ error: 'Email e senha sÃ£o obrigatÃ³rios.' });
   }
 
   const user = await repo.getUserByEmail(body.email);
@@ -191,7 +191,7 @@ server.post('/auth/login', async (request, reply) => {
 server.get('/auth/me', async (request, reply) => {
   const reqUser = (request as any).user;
   const user = await repo.getUserById(reqUser.userId);
-  if (!user) return reply.status(404).send({ error: 'Usuário não encontrado.' });
+  if (!user) return reply.status(404).send({ error: 'UsuÃ¡rio nÃ£o encontrado.' });
 
   const tenantsUsed = await repo.countTenantsByUser(user.id);
   const agentsUsed = await repo.countAgentsByUser(user.id);
@@ -214,30 +214,30 @@ server.get('/auth/me', async (request, reply) => {
 server.post('/auth/change-password', async (request, reply) => {
   const reqUser = (request as any).user;
   if (!reqUser || !reqUser.userId) {
-    return reply.status(401).send({ error: 'Não autorizado.' });
+    return reply.status(401).send({ error: 'NÃ£o autorizado.' });
   }
 
   const body = request.body as { currentPassword?: string; newPassword?: string; confirmPassword?: string };
   if (!body.currentPassword || !body.newPassword) {
-    return reply.status(400).send({ error: 'Senha atual e nova senha são obrigatórias.' });
+    return reply.status(400).send({ error: 'Senha atual e nova senha sÃ£o obrigatÃ³rias.' });
   }
 
   if (body.newPassword.length < 6) {
-    return reply.status(400).send({ error: 'A nova senha deve ter no mínimo 6 caracteres.' });
+    return reply.status(400).send({ error: 'A nova senha deve ter no mÃ­nimo 6 caracteres.' });
   }
 
   if (body.confirmPassword && body.newPassword !== body.confirmPassword) {
-    return reply.status(400).send({ error: 'A confirmação de senha não confere.' });
+    return reply.status(400).send({ error: 'A confirmaÃ§Ã£o de senha nÃ£o confere.' });
   }
 
   const user = await repo.getUserById(reqUser.userId);
   if (!user) {
-    return reply.status(404).send({ error: 'Usuário não encontrado.' });
+    return reply.status(404).send({ error: 'UsuÃ¡rio nÃ£o encontrado.' });
   }
 
   const isCurrentValid = await authService.comparePassword(body.currentPassword, user.passwordHash);
   if (!isCurrentValid) {
-    return reply.status(400).send({ error: 'A senha atual informada está incorreta.' });
+    return reply.status(400).send({ error: 'A senha atual informada estÃ¡ incorreta.' });
   }
 
   const newHash = await authService.hashPassword(body.newPassword);
@@ -262,7 +262,7 @@ server.get('/health', async () => {
 // Favicon handler
 server.get('/favicon.ico', async (request, reply) => {
   reply.header('Content-Type', 'image/svg+xml');
-  return reply.send('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🤖</text></svg>');
+  return reply.send('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">ðŸ¤–</text></svg>');
 });
 
 function extractMessageContent(msgObj: any): string {
@@ -366,7 +366,7 @@ server.post('/webhook/whatsapp/receive', async (request, reply) => {
 
   if (!tenantId) {
     console.warn(`[Webhook] No valid tenant found for instance "${instanceName}". Message ignored.`);
-    return reply.status(400).send({ error: 'Nenhum tenant associado à instância fornecida' });
+    return reply.status(400).send({ error: 'Nenhum tenant associado Ã  instÃ¢ncia fornecida' });
   }
 
   console.log(`[Webhook] Evolution API Inbound Message from ${phone} (${senderName}) for tenant ${tenantId}: "${content}"`);
@@ -510,7 +510,7 @@ server.post('/tenants/:id/sdr-mode', async (request, reply) => {
   const mode = (body.sdrMode || 'ADVANCED').toUpperCase();
 
   if (mode !== 'SIMPLE' && mode !== 'ADVANCED') {
-    return reply.status(400).send({ error: 'Modo inválido. Escolha SIMPLE ou ADVANCED.' });
+    return reply.status(400).send({ error: 'Modo invÃ¡lido. Escolha SIMPLE ou ADVANCED.' });
   }
 
   const updated = await repo.updateSDRMode(params.id, mode);
@@ -521,7 +521,7 @@ server.post('/tenants/:id/sdr-mode', async (request, reply) => {
       name: 'Agente Comercial IA',
       personaName: 'Ana',
       personaRole: 'Consultora de Vendas',
-      personality: 'Humana, empática e focada em resultados.',
+      personality: 'Humana, empÃ¡tica e focada em resultados.',
       baseInstructions: 'Atenda e qualifique leads com clareza.',
       sdrMode: mode,
     });
@@ -545,7 +545,7 @@ server.post('/tenants/:id/media', async (request, reply) => {
   const body = request.body as any;
 
   if (!body.triggerValue || !body.mediaUrl) {
-    return reply.status(400).send({ error: 'Tag de disparo e URL da mídia são obrigatórios.' });
+    return reply.status(400).send({ error: 'Tag de disparo e URL da mÃ­dia sÃ£o obrigatÃ³rios.' });
   }
 
   const asset = await repo.createMediaAsset({
@@ -604,7 +604,7 @@ server.post('/tenants/:id/media/upload', async (request, reply) => {
     const rawExt = path.extname(originalFilename).toLowerCase();
     const ext = rawExt || (fileMimeType.includes('image') ? '.jpg' : '.bin');
     if (!ALLOWED_UPLOAD_EXTS.has(ext)) {
-      return reply.status(400).send({ error: 'Tipo de arquivo não permitido. Apenas imagens, vídeos, áudios e documentos são aceitos.' });
+      return reply.status(400).send({ error: 'Tipo de arquivo nÃ£o permitido. Apenas imagens, vÃ­deos, Ã¡udios e documentos sÃ£o aceitos.' });
     }
 
     if (!triggerValue) {
@@ -635,7 +635,7 @@ server.post('/tenants/:id/media/upload', async (request, reply) => {
       caption: caption || undefined,
     });
 
-    return { success: true, asset, message: 'Arquivo enviado e mídia cadastrada com sucesso!' };
+    return { success: true, asset, message: 'Arquivo enviado e mÃ­dia cadastrada com sucesso!' };
   }
 
   // 2. JSON Base64 File Upload
@@ -646,7 +646,7 @@ server.post('/tenants/:id/media/upload', async (request, reply) => {
 
   const { triggerValue: rawTrigger, caption, mediaType: customType, filename, base64 } = body;
   if (!base64) {
-    return reply.status(400).send({ error: 'Arquivo base64 é obrigatório.' });
+    return reply.status(400).send({ error: 'Arquivo base64 Ã© obrigatÃ³rio.' });
   }
 
   const rawBase64 = base64.includes('base64,') ? base64.split('base64,')[1] : base64;
@@ -654,7 +654,7 @@ server.post('/tenants/:id/media/upload', async (request, reply) => {
   const ext = filename ? path.extname(filename).toLowerCase() : '.jpg';
   
   if (!ALLOWED_UPLOAD_EXTS.has(ext)) {
-    return reply.status(400).send({ error: 'Tipo de arquivo não permitido. Apenas imagens, vídeos, áudios e documentos são aceitos.' });
+    return reply.status(400).send({ error: 'Tipo de arquivo nÃ£o permitido. Apenas imagens, vÃ­deos, Ã¡udios e documentos sÃ£o aceitos.' });
   }
 
   let mediaType = customType || 'image';
@@ -679,7 +679,7 @@ server.post('/tenants/:id/media/upload', async (request, reply) => {
     caption: caption ? String(caption).trim() : undefined,
   });
 
-  return { success: true, asset, message: 'Arquivo enviado e mídia cadastrada com sucesso!' };
+  return { success: true, asset, message: 'Arquivo enviado e mÃ­dia cadastrada com sucesso!' };
 });
 
 // DELETE MEDIA ASSET
@@ -716,7 +716,7 @@ server.get('/tenants/:id/flows', async (request, reply) => {
 server.get('/flows/:flowId', async (request, reply) => {
   const params = request.params as { flowId: string };
   const flow = await repo.getFlowById(params.flowId);
-  if (!flow) return reply.status(404).send({ error: 'Fluxo não encontrado' });
+  if (!flow) return reply.status(404).send({ error: 'Fluxo nÃ£o encontrado' });
   return flow;
 });
 
@@ -798,10 +798,10 @@ server.post('/tenants/:id/leads/:leadId/reflect', async (request, reply) => {
   const params = request.params as { id: string, leadId: string };
   const { reflectionEngine } = await import('./engines/reflection/ReflectionEngine.js');
   
-  // Roda de forma assíncrona
+  // Roda de forma assÃ­ncrona
   reflectionEngine.reflectOnConversation(params.id, params.leadId).catch(console.error);
   
-  return { success: true, message: 'Reflexão iniciada em background' };
+  return { success: true, message: 'ReflexÃ£o iniciada em background' };
 });
 
 
@@ -881,7 +881,7 @@ server.get('/tenants/:id/analytics', async (request, reply) => {
 // LIST TENANTS FOR LOGGED IN USER
 server.get('/tenants', async (request, reply) => {
   const reqUser = (request as any).user;
-  if (!reqUser) return reply.status(401).send({ error: 'Não autorizado' });
+  if (!reqUser) return reply.status(401).send({ error: 'NÃ£o autorizado' });
   const tenants = await repo.getTenantsByUser(reqUser.userId);
   return tenants;
 });
@@ -890,7 +890,7 @@ server.get('/tenants', async (request, reply) => {
 server.get('/tenants/:id', async (request, reply) => {
   const params = request.params as { id: string };
   const tenant = await repo.getTenant(params.id);
-  if (!tenant) return reply.status(404).send({ error: 'Empresa (Tenant) não encontrada.' });
+  if (!tenant) return reply.status(404).send({ error: 'Empresa (Tenant) nÃ£o encontrada.' });
   return tenant;
 });
 
@@ -933,7 +933,7 @@ server.post('/tenants/:id/ai-traces/simulate', async (request, reply) => {
   const body = request.body as { inputMessage: string; leadId?: string };
 
   if (!body.inputMessage || body.inputMessage.trim().length === 0) {
-    return reply.status(400).send({ error: 'Mensagem de entrada é obrigatória para a simulação.' });
+    return reply.status(400).send({ error: 'Mensagem de entrada Ã© obrigatÃ³ria para a simulaÃ§Ã£o.' });
   }
 
   const { aiOrchestrator } = await import('./core/orchestrator/AIOrchestrator.js');
@@ -956,8 +956,8 @@ server.get('/tenants/:id/leads', async (request, reply) => {
     const state = await repo.getLeadStrategyState(lead.id);
     return {
       ...lead,
-      currentObjective: state?.currentObjective || 'Acolher o lead e descobrir seu nome e interesse básico',
-      currentStrategy: state?.currentStrategy || 'Rapport & Qualificação Primária',
+      currentObjective: state?.currentObjective || 'Acolher o lead e descobrir seu nome e interesse bÃ¡sico',
+      currentStrategy: state?.currentStrategy || 'Rapport & QualificaÃ§Ã£o PrimÃ¡ria',
     };
   }));
 
@@ -975,7 +975,7 @@ server.get('/tenants/:id/leads/tags', async (request, reply) => {
 server.get('/tenants/:id/leads/:leadId', async (request, reply) => {
   const params = request.params as { id: string; leadId: string };
   const lead = await repo.getLeadById(params.leadId);
-  if (!lead) return reply.status(404).send({ error: 'Lead não encontrado' });
+  if (!lead) return reply.status(404).send({ error: 'Lead nÃ£o encontrado' });
   return lead;
 });
 
@@ -994,12 +994,12 @@ server.post('/tenants/:id/leads', async (request, reply) => {
   };
 
   if (!body.phone) {
-    return reply.status(400).send({ error: 'Telefone do lead é obrigatório' });
+    return reply.status(400).send({ error: 'Telefone do lead Ã© obrigatÃ³rio' });
   }
 
   const cleanPhone = body.phone.toString().replace(/[^0-9]/g, '');
   if (!cleanPhone || cleanPhone.length < 7) {
-    return reply.status(400).send({ error: 'Número de telefone inválido' });
+    return reply.status(400).send({ error: 'NÃºmero de telefone invÃ¡lido' });
   }
 
   // Check if lead already exists
@@ -1016,7 +1016,7 @@ server.post('/tenants/:id/leads', async (request, reply) => {
       });
       return { success: true, lead: updated, upserted: true };
     }
-    return reply.status(409).send({ error: 'Já existe um lead cadastrado com este telefone.', leadId: existing.id });
+    return reply.status(409).send({ error: 'JÃ¡ existe um lead cadastrado com este telefone.', leadId: existing.id });
   }
 
   const lead = await repo.createLeadManual({
@@ -1047,18 +1047,18 @@ server.post('/tenants/:id/outbound/send', async (request, reply) => {
   };
 
   if (!body.phone || !body.message) {
-    return reply.status(400).send({ error: 'Telefone e mensagem inicial são obrigatórios.' });
+    return reply.status(400).send({ error: 'Telefone e mensagem inicial sÃ£o obrigatÃ³rios.' });
   }
 
   const cleanPhone = body.phone.toString().replace(/[^0-9]/g, '');
   if (!cleanPhone || cleanPhone.length < 7) {
-    return reply.status(400).send({ error: 'Número de telefone inválido.' });
+    return reply.status(400).send({ error: 'NÃºmero de telefone invÃ¡lido.' });
   }
 
   const tenantId = params.id;
   const tenant = await repo.getTenant(tenantId);
   if (!tenant) {
-    return reply.status(404).send({ error: 'Empresa não encontrada.' });
+    return reply.status(404).send({ error: 'Empresa nÃ£o encontrada.' });
   }
 
   // 1. Get or create lead
@@ -1138,7 +1138,7 @@ server.get('/tenants/:id/followup', async (request, reply) => {
   const params = request.params as { id: string };
   const config = await repo.getSDRConfig(params.id);
   if (!config) {
-    return reply.status(404).send({ error: 'Configuração do SDR não encontrada.' });
+    return reply.status(404).send({ error: 'ConfiguraÃ§Ã£o do SDR nÃ£o encontrada.' });
   }
 
   let sequenceList = [];
@@ -1196,7 +1196,7 @@ server.post('/tenants/:id/followup', async (request, reply) => {
   }
 
   const updated = await repo.updateFollowUpConfig(params.id, payload);
-  return { success: true, config: updated, message: 'Configurações de follow-up salvas com sucesso!' };
+  return { success: true, config: updated, message: 'ConfiguraÃ§Ãµes de follow-up salvas com sucesso!' };
 });
 
 // FOLLOW-UP: RUN MANUAL CYCLE (SCAN & TRIGGER)
@@ -1209,7 +1209,7 @@ server.post('/tenants/:id/followup/run', async (request, reply) => {
   return {
     success: true,
     result,
-    message: `Varredura concluída: ${result.sent} follow-ups disparados, ${result.analyzed} analisados.`
+    message: `Varredura concluÃ­da: ${result.sent} follow-ups disparados, ${result.analyzed} analisados.`
   };
 });
 
@@ -1246,9 +1246,9 @@ server.delete('/tenants/:id/leads/:leadId', async (request, reply) => {
   const params = request.params as { id: string; leadId: string };
   const deleted = await repo.deleteLead(params.leadId);
   if (!deleted) {
-    return reply.status(404).send({ error: 'Lead não encontrado ou já excluído.' });
+    return reply.status(404).send({ error: 'Lead nÃ£o encontrado ou jÃ¡ excluÃ­do.' });
   }
-  return { success: true, message: 'Lead e todos os dados vinculados excluídos em conformidade com a LGPD.' };
+  return { success: true, message: 'Lead e todos os dados vinculados excluÃ­dos em conformidade com a LGPD.' };
 });
 
 // EXPORT LEAD DATA (LGPD ART. 18, II)
@@ -1256,7 +1256,7 @@ server.get('/tenants/:id/leads/:leadId/export-lgpd', async (request, reply) => {
   const params = request.params as { id: string; leadId: string };
   const report = await repo.exportLeadLGPD(params.leadId);
   if (!report) {
-    return reply.status(404).send({ error: 'Lead não encontrado para exportação.' });
+    return reply.status(404).send({ error: 'Lead nÃ£o encontrado para exportaÃ§Ã£o.' });
   }
   reply.header('Content-Disposition', `attachment; filename="relatorio-lgpd-lead-${params.leadId}.json"`);
   return report;
@@ -1297,69 +1297,37 @@ server.post('/corrections', async (request, reply) => {
   return { success: true, correction };
 });
 
-const start = async () => {
-  try {
-    // 1. Connect to PostgreSQL database
-    await dbService.connect();
-
-    // 2. Seed default playbook knowledge in the PostgreSQL database
-    const tenant = await repo.getFirstTenant();
-    await repo.seedKnowledge(tenant.id, 'Playbook Comercial Imobiliária Prime', [
-      'O condomínio Vila Nova possui apartamentos de 2 e 3 dormitórios com suíte e varanda gourmet integrada.',
-      'A área de lazer do condomínio conta com piscina adulto com raia, piscina infantil, brinquedoteca, salão de festas decorado, academia completa, quadra poliesportiva e portaria presencial 24h.',
-      'O preço das unidades de 2 dormitórios começa em R$ 450.000,00 e o fluxo de pagamento é composto de 10% de entrada, mensais de R$ 2.500,00 durante as obras, e o restante via financiamento bancário.',
-      'As visitas ao decorado ocorrem de segunda a domingo, das 9h às 18h. O endereço é Avenida Paulista, 1000, São Paulo.',
-      'O prazo de entrega da obra está previsto para Dezembro de 2027.'
-    ]);
-
-    
 // ==========================================
-//   WHATSAPP EVOLUTION API (MULTI-TENANT - SINGLE INSTANCE PER TENANT)
+//   WHATSAPP EVOLUTION API (MULTI-TENANT)
 // ==========================================
 
-// GET WHATSAPP STATUS (SINGLE INSTANCE PER COMPANY)
+// GET WHATSAPP STATUS
 server.get('/tenants/:id/whatsapp/status', async (request, reply) => {
   const params = request.params as { id: string };
   const tenantId = params.id;
   const instanceName = `tenant-${tenantId}`;
   const evoApiUrl = process.env.EVOLUTION_API_URL || 'http://localhost:8080';
   const evoApiKey = process.env.EVOLUTION_API_KEY || '';
-
   const headers = { 'Content-Type': 'application/json', 'apikey': evoApiKey };
-
   try {
     const res = await fetch(`${evoApiUrl}/instance/connectionState/${instanceName}`, { headers });
     if (res.ok) {
       const data = await res.json() as any;
       const state = data.instance?.state || data.state || 'close';
       const isConnected = state === 'open';
-
-      // If connected, sync instanceName into SDRConfig if not already set
       if (isConnected) {
         const sdrConfig = await repo.getSDRConfigByTenant(tenantId);
         if (sdrConfig && sdrConfig.instanceName !== instanceName) {
-          await repo.upsertSDRConfig({
-            ...sdrConfig,
-            instanceName,
-          });
+          await repo.upsertSDRConfig({ ...sdrConfig, instanceName });
         }
       }
-
-      return {
-        connected: isConnected,
-        state,
-        instanceName,
-        profileName: data.instance?.profileName || null,
-        phone: data.instance?.owner || null,
-      };
+      return { connected: isConnected, state, instanceName, profileName: data.instance?.profileName || null, phone: data.instance?.owner || null };
     }
-
     return { connected: false, state: 'close', instanceName };
   } catch (error) {
-    return { connected: false, state: 'disconnected', instanceName, error: 'Instância offline ou não criada' };
+    return { connected: false, state: 'disconnected', instanceName, error: 'InstÃ¢ncia offline ou nÃ£o criada' };
   }
 });
-
 server.get('/tenants/:id/whatsapp/qr', async (request, reply) => {
   const params = request.params as { id: string };
   const tenantId = params.id;
@@ -1447,10 +1415,10 @@ server.get('/tenants/:id/whatsapp/qr', async (request, reply) => {
       return { status: 'QRCODE', base64: retryData.base64 };
     }
 
-    return reply.status(500).send({ error: 'Não foi possível gerar o QR Code' });
+    return reply.status(500).send({ error: 'N├úo foi poss├¡vel gerar o QR Code' });
   } catch (error) {
     console.error('Evolution API Error:', error);
-    return reply.status(500).send({ error: 'Erro de comunicação com a Evolution API' });
+    return reply.status(500).send({ error: 'Erro de comunica├º├úo com a Evolution API' });
   }
 });
 
@@ -1503,7 +1471,7 @@ server.delete('/tenants/:id/knowledge/:knowledgeId', async (request, reply) => {
 const ensureAdmin = async (request: any, reply: any) => {
   const reqUser = (request as any).user;
   if (!reqUser) {
-    reply.status(401).send({ error: 'Não autorizado.' });
+    reply.status(401).send({ error: 'N├úo autorizado.' });
     return null;
   }
   const user = await repo.getUserById(reqUser.userId);
@@ -1569,15 +1537,15 @@ server.post('/admin/users', async (request, reply) => {
   };
 
   if (!body.email || !body.name || !body.password) {
-    return reply.status(400).send({ error: 'Nome, e-mail e senha inicial são obrigatórios.' });
+    return reply.status(400).send({ error: 'Nome, e-mail e senha inicial s├úo obrigat├│rios.' });
   }
   if (body.password.length < 6) {
-    return reply.status(400).send({ error: 'A senha deve ter no mínimo 6 caracteres.' });
+    return reply.status(400).send({ error: 'A senha deve ter no m├¡nimo 6 caracteres.' });
   }
 
   const existing = await repo.getUserByEmail(body.email);
   if (existing) {
-    return reply.status(409).send({ error: 'Já existe um usuário cadastrado com este e-mail.' });
+    return reply.status(409).send({ error: 'J├í existe um usu├írio cadastrado com este e-mail.' });
   }
 
   const passwordHash = await authService.hashPassword(body.password);
@@ -1632,11 +1600,11 @@ server.delete('/admin/users/:id', async (request, reply) => {
   const reqUser = (request as any).user;
 
   if (params.id === reqUser.userId) {
-    return reply.status(400).send({ error: 'Você não pode excluir sua própria conta de administrador.' });
+    return reply.status(400).send({ error: 'Voc├¬ n├úo pode excluir sua pr├│pria conta de administrador.' });
   }
 
   await repo.deleteUser(params.id);
-  return { success: true, message: 'Usuário excluído com sucesso.' };
+  return { success: true, message: 'Usu├írio exclu├¡do com sucesso.' };
 });
 
 // GET /admin/settings - Read Global AI & System Settings
@@ -1702,7 +1670,7 @@ server.post('/admin/settings', async (request, reply) => {
   const updated = await repo.updateSystemSettings(updatePayload);
   await aiService.syncSettings();
 
-  return { success: true, settings: updated, message: 'Configurações de IA salvas com sucesso!' };
+  return { success: true, settings: updated, message: 'Configura├º├Áes de IA salvas com sucesso!' };
 });
 
 // POST /admin/test-ai - Test connection with active or specified AI provider
@@ -1730,12 +1698,34 @@ server.post('/admin/test-ai', async (request, reply) => {
   return testResult;
 });
 
+
+// ==========================================
+//   SERVER STARTUP
+// ==========================================
+
+const start = async () => {
+  try {
+    // 1. Connect to PostgreSQL database (falls back to in-memory if unavailable)
+    await dbService.connect();
+
+    // 2. Seed default playbook knowledge (only if DB is connected)
+    if (dbService.getIsConnected()) {
+      const tenant = await repo.getFirstTenant();
+      await repo.seedKnowledge(tenant.id, 'Playbook Comercial Imobiliaria Prime', [
+        'O condominio Vila Nova possui apartamentos de 2 e 3 dormitorios com suite e varanda gourmet integrada.',
+        'A area de lazer do condominio conta com piscina adulto com raia, piscina infantil, brinquedoteca, salao de festas decorado, academia completa, quadra poliesportiva e portaria presencial 24h.',
+        'O preco das unidades de 2 dormitorios comeca em R\$ 450.000,00 e o fluxo de pagamento e composto de 10% de entrada, mensais de R\$ 2.500,00 durante as obras, e o restante via financiamento bancario.',
+        'As visitas ao decorado ocorrem de segunda a domingo, das 9h as 18h. O endereco e Avenida Paulista, 1000, Sao Paulo.',
+        'O prazo de entrega da obra esta previsto para Dezembro de 2027.'
+      ]);
+    }
+
     // 3. Start Fastify server
     const port = Number(process.env.PORT) || 3000;
     const host = process.env.HOST || '0.0.0.0';
-    
+
     await server.listen({ port, host });
-    console.log(`[Server] Fastify server running on http://${host}:${port}`);
+    console.log(`[Server] SDR Inteligente rodando em http://${host}:${port}`);
   } catch (err) {
     server.log.error(err);
     process.exit(1);
