@@ -1,5 +1,8 @@
 ﻿FROM node:20-alpine AS builder
 
+# Instala o OpenSSL necessário para o Prisma no Alpine
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Install all deps (including devDeps for build)
@@ -16,6 +19,9 @@ RUN npx prisma generate
 
 # Production stage
 FROM node:20-alpine AS runner
+
+# Instala o OpenSSL na imagem final de execução
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
