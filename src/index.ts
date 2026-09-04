@@ -16,6 +16,7 @@ import { analyticsEngine } from './engines/analytics/AnalyticsEngine.js';
 import { authService } from './core/auth/AuthService.js';
 import { aiService } from './core/ai/GeminiService.js';
 import { followUpEngine } from './engines/followup/FollowUpEngine.js';
+import { integrationEngine } from './engines/integration/IntegrationEngine.js';
 
 import rateLimit from '@fastify/rate-limit';
 
@@ -25,14 +26,14 @@ dotenv.config();
 const REQUIRED_ENV = ['GEMINI_API_KEY', 'JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
 if (missingEnv.length > 0) {
-  console.warn(`[Config Warning] VariÃ¡veis de ambiente crÃ­ticas ausentes: ${missingEnv.join(', ')}`);
+  console.warn(`[Config Warning] Variáveis de ambiente críticas ausentes: ${missingEnv.join(', ')}`);
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ensure all engines and services are registered to event listeners
-const _engines = [conversationEngine, aiOrchestrator, humanizer, outboundConnector, analyticsEngine];
+const _engines = [conversationEngine, aiOrchestrator, humanizer, outboundConnector, analyticsEngine, integrationEngine];
 
 const server = fastify({ logger: true, bodyLimit: 52428800 });
 
@@ -419,6 +420,70 @@ server.get('/analytics/dashboard', async (request, reply) => {
   
   const dashboard = await analyticsEngine.getDashboard(tenantId);
   return dashboard;
+});
+
+// ==========================================
+//   INTEGRATIONS WEBHOOKS (META & GOOGLE SHEETS)
+// ==========================================
+
+// GET /webhook/meta/leadgen - Meta Webhook Handshake Verification
+server.get('/webhook/meta/leadgen', async (request, reply) => {
+  const query = request.query as any;
+  let tenantId = query.tenantId || query.tenant_id;
+
+  if (!tenantId) {
+    const firstTenant = await repo.getFirstTenant();
+    if (firstTenant) tenantId = firstTenant.id;
+  }
+
+  if (!tenantId) {
+    return reply.status(400).send('Tenant not found');
+  }
+
+  const challenge = await integrationEngine.verifyMetaWebhook(tenantId, query);
+  if (challenge) {
+    return reply.status(200).send(challenge);
+  }
+  return reply.status(403).send('Verification token mismatch');
+});
+
+// POST /webhook/meta/leadgen - Meta Lead Ads Ingestion
+server.post('/webhook/meta/leadgen', async (request, reply) => {
+  const query = request.query as any;
+  const body = request.body as any;
+  let tenantId = query.tenantId || query.tenant_id || body.tenantId || body.tenant_id;
+
+  if (!tenantId) {
+    const firstTenant = await repo.getFirstTenant();
+    if (firstTenant) tenantId = firstTenant.id;
+  }
+
+  if (!tenantId) {
+    return reply.status(400).send({ error: 'Nenhum tenant associado ao webhook da Meta' });
+  }
+
+  const result = await integrationEngine.processMetaLeadgen(tenantId, body);
+  return reply.status(result.success ? 200 : (result.status === 'IGNORED' ? 200 : 400)).send(result);
+});
+
+// POST /webhook/google-sheets/row - Google Sheets New Row Ingestion
+server.post('/webhook/google-sheets/row', async (request, reply) => {
+  const query = request.query as any;
+  const body = request.body as any;
+  const secretHeader = request.headers['x-secret-key'] as string | undefined;
+  let tenantId = query.tenantId || query.tenant_id || body.tenantId || body.tenant_id;
+
+  if (!tenantId) {
+    const firstTenant = await repo.getFirstTenant();
+    if (firstTenant) tenantId = firstTenant.id;
+  }
+
+  if (!tenantId) {
+    return reply.status(400).send({ error: 'Nenhum tenant associado ao webhook do Google Sheets' });
+  }
+
+  const result = await integrationEngine.processGoogleSheetsRow(tenantId, body, secretHeader);
+  return reply.status(result.success ? 200 : (result.status === 'IGNORED' ? 200 : 400)).send(result);
 });
 
 // ==========================================
@@ -1260,6 +1325,138 @@ server.get('/tenants/:id/leads/:leadId/export-lgpd', async (request, reply) => {
   }
   reply.header('Content-Disposition', `attachment; filename="relatorio-lgpd-lead-${params.leadId}.json"`);
   return report;
+});
+
+// ==========================================
+//   INTEGRATIONS CONFIG & MANAGEMENT
+// ==========================================
+
+// GET /tenants/:id/integrations - Get all integration configs and summary statistics
+server.get('/tenants/:id/integrations', async (request, reply) => {
+  const params = request.params as { id: string };
+  const tenantId = params.id;
+
+  const [configs, stats] = await Promise.all([
+    repo.getIntegrationConfigs(tenantId),
+    repo.getIntegrationStats(tenantId),
+  ]);
+
+  const metaConfig = configs.find(c => c.provider === 'META') || {
+    provider: 'META',
+    isEnabled: false,
+    verifyToken: `meta_${tenantId.slice(0, 8)}`,
+    accessToken: null,
+    secretKey: null,
+    formIds: null,
+    pageIds: null,
+    fieldMapping: '{}',
+    autoCreateLead: true,
+    triggerOutbound: false,
+    outboundMessage: 'Olá {nome}, recebemos seu interesse no nosso anúncio! Como posso te ajudar hoje?',
+    tags: ['meta_ads'],
+    defaultStatus: 'NEW',
+  };
+
+  const sheetsConfig = configs.find(c => c.provider === 'GOOGLE_SHEETS') || {
+    provider: 'GOOGLE_SHEETS',
+    isEnabled: false,
+    verifyToken: null,
+    accessToken: null,
+    secretKey: null,
+    sheetNames: null,
+    fieldMapping: '{}',
+    autoCreateLead: true,
+    triggerOutbound: false,
+    outboundMessage: 'Olá {nome}, recebemos suas informações da nossa planilha! Como posso te ajudar?',
+    tags: ['google_sheets'],
+    defaultStatus: 'NEW',
+  };
+
+  const protocol = request.protocol || 'http';
+  const host = request.headers.host || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
+
+  return {
+    meta: {
+      ...metaConfig,
+      webhookUrl: `${baseUrl}/webhook/meta/leadgen?tenantId=${tenantId}`,
+    },
+    googleSheets: {
+      ...sheetsConfig,
+      webhookUrl: `${baseUrl}/webhook/google-sheets/row?tenantId=${tenantId}`,
+    },
+    stats,
+  };
+});
+
+// POST /tenants/:id/integrations/:provider - Update or create integration config
+server.post('/tenants/:id/integrations/:provider', async (request, reply) => {
+  const params = request.params as { id: string; provider: string };
+  const tenantId = params.id;
+  const provider = params.provider.toUpperCase();
+
+  if (provider !== 'META' && provider !== 'GOOGLE_SHEETS') {
+    return reply.status(400).send({ error: 'Provedor inválido. Use META ou GOOGLE_SHEETS.' });
+  }
+
+  const body = request.body as any;
+  const saved = await repo.upsertIntegrationConfig(tenantId, provider, {
+    isEnabled: body.isEnabled !== undefined ? Boolean(body.isEnabled) : true,
+    verifyToken: body.verifyToken !== undefined ? String(body.verifyToken).trim() : undefined,
+    accessToken: body.accessToken !== undefined ? String(body.accessToken).trim() : undefined,
+    secretKey: body.secretKey !== undefined ? String(body.secretKey).trim() : undefined,
+    formIds: body.formIds !== undefined ? String(body.formIds).trim() : undefined,
+    pageIds: body.pageIds !== undefined ? String(body.pageIds).trim() : undefined,
+    sheetNames: body.sheetNames !== undefined ? String(body.sheetNames).trim() : undefined,
+    fieldMapping: typeof body.fieldMapping === 'object' ? JSON.stringify(body.fieldMapping) : String(body.fieldMapping || '{}'),
+    autoCreateLead: body.autoCreateLead !== undefined ? Boolean(body.autoCreateLead) : true,
+    triggerOutbound: body.triggerOutbound !== undefined ? Boolean(body.triggerOutbound) : false,
+    outboundMessage: body.outboundMessage !== undefined ? String(body.outboundMessage) : undefined,
+    tags: Array.isArray(body.tags) ? body.tags : (body.tags ? String(body.tags).split(',').map((s: string) => s.trim()) : undefined),
+    defaultStatus: body.defaultStatus || 'NEW',
+  });
+
+  return { success: true, message: `Configuração de ${provider} salva com sucesso!`, config: saved };
+});
+
+// GET /tenants/:id/integrations/logs - Get integration activity logs
+server.get('/tenants/:id/integrations/logs', async (request, reply) => {
+  const params = request.params as { id: string };
+  const query = request.query as { provider?: string; status?: string; limit?: string };
+  const tenantId = params.id;
+
+  const logs = await repo.getIntegrationLogs(tenantId, {
+    provider: query.provider,
+    status: query.status,
+    limit: query.limit ? Number(query.limit) : 50,
+  });
+
+  return logs;
+});
+
+// POST /tenants/:id/integrations/logs/:logId/consume - Consume / reprocess a specific log
+server.post('/tenants/:id/integrations/logs/:logId/consume', async (request, reply) => {
+  const params = request.params as { id: string; logId: string };
+  const result = await integrationEngine.consumeLogEvent(params.id, params.logId);
+  return reply.status(result.success ? 200 : 400).send(result);
+});
+
+// POST /tenants/:id/integrations/simulate - Simulate test event for Meta or Google Sheets
+server.post('/tenants/:id/integrations/simulate', async (request, reply) => {
+  const params = request.params as { id: string };
+  const body = request.body as { provider: 'META' | 'GOOGLE_SHEETS'; name?: string; phone?: string; email?: string };
+
+  if (!body.provider || (body.provider !== 'META' && body.provider !== 'GOOGLE_SHEETS')) {
+    return reply.status(400).send({ error: 'Provedor deve ser META ou GOOGLE_SHEETS.' });
+  }
+
+  const result = await integrationEngine.simulateTestEvent(params.id, body.provider, {
+    name: body.name,
+    phone: body.phone,
+    email: body.email,
+  });
+
+  return result;
 });
 
 // GET MESSAGE HISTORY FOR SPECIFIC LEAD

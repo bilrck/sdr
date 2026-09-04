@@ -35,6 +35,8 @@ model Tenant {
   mediaAssets      MediaAsset[]
   flows            Flow[]
   outboundCampaigns OutboundCampaign[]
+  integrationConfigs IntegrationConfig[]
+  integrationLogs   IntegrationLog[]
 }
 
 model SDRConfig {
@@ -285,5 +287,48 @@ model SystemSetting {
   geminiModel  String   @default("gemini-2.5-flash")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model IntegrationConfig {
+  id              String   @id @default(uuid())
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider        String   // "META" | "GOOGLE_SHEETS"
+  isEnabled       Boolean  @default(true)
+  verifyToken     String?
+  accessToken     String?  @db.Text
+  secretKey       String?
+  formIds         String?  @db.Text
+  pageIds         String?  @db.Text
+  sheetNames      String?  @db.Text
+  fieldMapping    String   @default("{}") @db.Text
+  autoCreateLead  Boolean  @default(true)
+  triggerOutbound Boolean  @default(false)
+  outboundMessage String?  @db.Text
+  tags            String[] @default([])
+  defaultStatus   String   @default("NEW")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, provider])
+}
+
+model IntegrationLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider     String   // "META" | "GOOGLE_SHEETS"
+  event        String   @default("lead_received")
+  status       String   @default("SUCCESS") // "SUCCESS" | "WARNING" | "ERROR" | "IGNORED"
+  leadId       String?
+  leadPhone    String?
+  leadName     String?
+  rawPayload   String   @db.Text
+  parsedData   String?  @db.Text
+  messageSent  String?  @db.Text
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId, provider, createdAt])
 }
 

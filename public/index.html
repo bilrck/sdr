@@ -225,6 +225,11 @@
           <i class="fa-solid fa-chart-line"></i>
           <span class="nav-label">Analytics</span>
         </button>
+        <button class="nav-item" data-page="integrations">
+          <i class="fa-solid fa-plug-circle-bolt"></i>
+          <span class="nav-label">Integrações</span>
+          <span class="nav-badge" id="nav-integrations-badge" style="display:none; background:rgba(34,197,94,0.15); color:var(--success);">0</span>
+        </button>
       </div>
 
       <div class="nav-divider"></div>
@@ -950,7 +955,9 @@
                 <input type="text" id="flow-name" placeholder="Nome do Fluxo">
                 <select id="flow-trigger">
                   <option value="keyword">Palavra-chave</option>
-                  <option value="inbound_new_lead">Novo Lead</option>
+                  <option value="inbound_new_lead">Novo Lead (Geral)</option>
+                  <option value="integration_meta">Meta Ads (Novo Lead Formulário)</option>
+                  <option value="integration_sheets">Google Sheets (Nova Linha)</option>
                   <option value="manual">Manual</option>
                 </select>
                 <input type="text" id="flow-trigger-value" placeholder="Valor (ex: promoção)">
@@ -1935,6 +1942,426 @@
 
       </section>
 
+      <!-- ======================== PAGE: INTEGRATIONS ======================== -->
+      <section id="page-integrations" class="page">
+        <div class="page-header">
+          <div>
+            <h2><i class="fa-solid fa-plug-circle-bolt" style="color:var(--primary);"></i> Integrações & Webhooks</h2>
+            <p>Conecte o Meta Lead Ads e Google Sheets para capturar leads instantaneamente, disparar WhatsApp e iniciar fluxos.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary" onclick="loadIntegrations()">
+              <i class="fa-solid fa-arrows-rotate"></i> Atualizar Dados
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Overview Cards -->
+        <div class="stats-grid mb-24">
+          <div class="stat-card glass">
+            <div class="stat-icon" style="background:rgba(59,130,246,0.15); color:#3b82f6;">
+              <i class="fa-brands fa-meta"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Meta Lead Ads</span>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                <span class="stat-value" id="stat-meta-count">0</span>
+                <span class="badge" id="stat-meta-status-badge" style="background:rgba(148,163,184,0.15); color:var(--text-muted);">Inativo</span>
+              </div>
+              <span class="stat-sub" id="stat-meta-outbound-info">Disparo: Desativado</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass">
+            <div class="stat-icon" style="background:rgba(34,197,94,0.15); color:#22c55e;">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Google Sheets</span>
+              <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                <span class="stat-value" id="stat-sheets-count">0</span>
+                <span class="badge" id="stat-sheets-status-badge" style="background:rgba(148,163,184,0.15); color:var(--text-muted);">Inativo</span>
+              </div>
+              <span class="stat-sub" id="stat-sheets-outbound-info">Disparo: Desativado</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass">
+            <div class="stat-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">
+              <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Disparos Automáticos</span>
+              <span class="stat-value" id="stat-integration-sent">0</span>
+              <span class="stat-sub">Mensagens enviadas via WhatsApp</span>
+            </div>
+          </div>
+
+          <div class="stat-card glass">
+            <div class="stat-icon" style="background:rgba(234,179,8,0.15); color:#eab308;">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total de Eventos</span>
+              <span class="stat-value" id="stat-total-events">0</span>
+              <span class="stat-sub" id="stat-success-rate">Taxa de Sucesso: 100%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inner Tabs -->
+        <div class="inner-tabs">
+          <button class="inner-tab active" data-inner-tab="tab-int-meta">
+            <i class="fa-brands fa-meta"></i> Meta Lead Ads (Facebook & Instagram)
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-int-sheets">
+            <i class="fa-solid fa-file-excel"></i> Google Sheets (Planilhas)
+          </button>
+          <button class="inner-tab" data-inner-tab="tab-int-logs">
+            <i class="fa-solid fa-list-check"></i> Monitor de Logs & Consumo
+            <span class="badge" id="badge-int-logs-count" style="margin-left:6px; font-size:10px; background:rgba(99,102,241,0.2); color:#818cf8;">0</span>
+          </button>
+        </div>
+
+        <!-- ================= TAB 1: META LEAD ADS ================= -->
+        <div id="tab-int-meta" class="inner-tab-content active">
+          <div class="glass form-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:20px;">
+              <div>
+                <h3><i class="fa-brands fa-meta" style="color:#3b82f6;"></i> Configuração Meta Lead Ads</h3>
+                <p style="color:var(--text-muted); font-size:13px; margin-top:2px;">Receba leads instantaneamente assim que preencherem formulários instantâneos de anúncios.</p>
+              </div>
+              <label class="toggle-wrap" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <span style="font-weight:600; font-size:13px;">Habilitar Meta Ads</span>
+                <input type="checkbox" id="meta-is-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="config-grid">
+              <!-- Webhook URL -->
+              <div class="form-group full-width">
+                <label><i class="fa-solid fa-link"></i> URL de Callback do Webhook (Cole no Meta Developers / Gerenciador de Negócios)</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="meta-webhook-url" readonly style="background:rgba(0,0,0,0.3); font-family:monospace; color:var(--primary-light);">
+                  <button type="button" class="btn-secondary" onclick="copyInputText('meta-webhook-url')" title="Copiar URL">
+                    <i class="fa-solid fa-copy"></i> Copiar
+                  </button>
+                </div>
+                <span class="field-hint">Configure este endpoint no webhook do aplicativo da Meta no campo "URL de Retorno de Chamada".</span>
+              </div>
+
+              <!-- Verify Token -->
+              <div class="form-group">
+                <label for="meta-verify-token"><i class="fa-solid fa-key"></i> Token de Verificação (Verify Token)</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="meta-verify-token" placeholder="Ex: meta_token_seguro">
+                  <button type="button" class="btn-secondary" onclick="generateRandomToken('meta-verify-token')" title="Gerar Token">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                  </button>
+                </div>
+                <span class="field-hint">Cole este mesmo token no campo "Verificar Token" na Meta.</span>
+              </div>
+
+              <!-- Page Access Token -->
+              <div class="form-group">
+                <label for="meta-access-token"><i class="fa-solid fa-shield-halved"></i> Access Token da Página Meta (Opcional)</label>
+                <input type="password" id="meta-access-token" placeholder="EAAB... (necessário para buscar campos via Graph API)">
+                <span class="field-hint">Token de acesso de longa duração com permissão <code>leads_retrieval</code>.</span>
+              </div>
+
+              <!-- Form IDs Filter -->
+              <div class="form-group full-width">
+                <label for="meta-form-ids"><i class="fa-solid fa-filter"></i> Filtro de Formulários (Form IDs) - Opcional</label>
+                <input type="text" id="meta-form-ids" placeholder="Ex: 123456789, 987654321 (deixe vazio para aceitar todos os formulários)">
+                <span class="field-hint">Separe múltiplos IDs por vírgula. Leads de outros formulários serão ignorados.</span>
+              </div>
+
+              <!-- Section Divider -->
+              <div class="full-width" style="margin-top:10px; margin-bottom:10px; border-top:1px solid var(--border); padding-top:16px;">
+                <h4 style="font-size:15px; font-weight:600; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-sitemap" style="color:var(--primary);"></i> Mapeamento de Campos do Formulário
+                </h4>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Indique o nome exato dos campos configurados no seu formulário do Facebook/Instagram.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="meta-map-name"><i class="fa-solid fa-user"></i> Campo do Nome</label>
+                <input type="text" id="meta-map-name" placeholder="Padrão: full_name, nome, name">
+              </div>
+
+              <div class="form-group">
+                <label for="meta-map-phone"><i class="fa-solid fa-phone"></i> Campo do Telefone / WhatsApp</label>
+                <input type="text" id="meta-map-phone" placeholder="Padrão: phone_number, whatsapp, telefone">
+              </div>
+
+              <div class="form-group">
+                <label for="meta-map-email"><i class="fa-solid fa-envelope"></i> Campo do E-mail</label>
+                <input type="text" id="meta-map-email" placeholder="Padrão: email">
+              </div>
+
+              <div class="form-group">
+                <label for="meta-map-notes"><i class="fa-solid fa-comment-dots"></i> Campo de Observações / Interesse</label>
+                <input type="text" id="meta-map-notes" placeholder="Ex: mensagem, interesse (outros campos viram customFields)">
+              </div>
+
+              <!-- Section Divider -->
+              <div class="full-width" style="margin-top:10px; margin-bottom:10px; border-top:1px solid var(--border); padding-top:16px;">
+                <h4 style="font-size:15px; font-weight:600; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-paper-plane" style="color:var(--success);"></i> Automações & Disparador WhatsApp
+                </h4>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">O que deve acontecer imediatamente após o recebimento do formulário?</p>
+              </div>
+
+              <div class="form-group full-width" style="display:flex; flex-direction:column; gap:10px;">
+                <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="meta-auto-create-lead" checked>
+                  <span><strong>Criar Lead no CRM automaticamente</strong> com os dados capturados</span>
+                </label>
+
+                <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="meta-trigger-outbound">
+                  <span><strong>Disparar mensagem no WhatsApp imediatamente</strong> (aciona o Disparador e salva histórico)</span>
+                </label>
+              </div>
+
+              <!-- Outbound Message Template -->
+              <div class="form-group full-width" id="meta-outbound-group">
+                <label for="meta-outbound-message"><i class="fa-solid fa-message"></i> Mensagem Inicial de Abertura (WhatsApp)</label>
+                <textarea id="meta-outbound-message" rows="3" placeholder="Olá {nome}, recebemos seu interesse através do nosso anúncio! Sou o atendente da {empresa}. Como posso te ajudar hoje?"></textarea>
+                <span class="field-hint">Variáveis disponíveis: <code>{nome}</code>, <code>{empresa}</code>, <code>{telefone}</code>.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="meta-tags"><i class="fa-solid fa-tags"></i> Tags do Lead</label>
+                <input type="text" id="meta-tags" placeholder="meta_ads, anuncio_facebook, campanha_1">
+                <span class="field-hint">Separadas por vírgula.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="meta-default-status"><i class="fa-solid fa-circle-dot"></i> Status Inicial do Lead</label>
+                <select id="meta-default-status">
+                  <option value="NEW">Novo (NEW)</option>
+                  <option value="ACTIVE">Em Atendimento (ACTIVE)</option>
+                  <option value="QUALIFIED">Qualificado (QUALIFIED)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+              <button type="button" class="btn-secondary" onclick="simulateIntegration('META')">
+                <i class="fa-solid fa-vial"></i> Simular Lead do Meta (Teste Rápido)
+              </button>
+              <button type="button" class="btn-primary" onclick="saveMetaConfig()">
+                <i class="fa-solid fa-save"></i> Salvar Configuração Meta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB 2: GOOGLE SHEETS ================= -->
+        <div id="tab-int-sheets" class="inner-tab-content">
+          <div class="glass form-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:20px;">
+              <div>
+                <h3><i class="fa-solid fa-file-excel" style="color:#22c55e;"></i> Configuração Google Sheets (Planilhas)</h3>
+                <p style="color:var(--text-muted); font-size:13px; margin-top:2px;">Receba eventos sempre que uma nova linha for adicionada em qualquer planilha do Google.</p>
+              </div>
+              <label class="toggle-wrap" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                <span style="font-weight:600; font-size:13px;">Habilitar Google Sheets</span>
+                <input type="checkbox" id="sheets-is-enabled" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="config-grid">
+              <!-- Webhook URL -->
+              <div class="form-group full-width">
+                <label><i class="fa-solid fa-link"></i> URL de Destino do Webhook (Cole no Google Apps Script)</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="sheets-webhook-url" readonly style="background:rgba(0,0,0,0.3); font-family:monospace; color:var(--primary-light);">
+                  <button type="button" class="btn-secondary" onclick="copyInputText('sheets-webhook-url')" title="Copiar URL">
+                    <i class="fa-solid fa-copy"></i> Copiar
+                  </button>
+                </div>
+                <span class="field-hint">Esta URL recebe requisições HTTP POST com o JSON da nova linha adicionada.</span>
+              </div>
+
+              <!-- Secret Key -->
+              <div class="form-group">
+                <label for="sheets-secret-key"><i class="fa-solid fa-shield-halved"></i> Chave Secreta de Segurança (Opcional)</label>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="sheets-secret-key" placeholder="Ex: chave_secreta_planilha">
+                  <button type="button" class="btn-secondary" onclick="generateRandomToken('sheets-secret-key')" title="Gerar Chave">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                  </button>
+                </div>
+                <span class="field-hint">Se preenchida, envie no cabeçalho <code>x-secret-key</code> ou no corpo JSON como <code>secretToken</code>.</span>
+              </div>
+
+              <!-- Sheet Names Filter -->
+              <div class="form-group">
+                <label for="sheets-names"><i class="fa-solid fa-filter"></i> Filtro de Abas da Planilha - Opcional</label>
+                <input type="text" id="sheets-names" placeholder="Ex: Leads, Setembro, Pagina1 (deixe vazio para aceitar todas)">
+                <span class="field-hint">Separe por vírgula. Linhas em outras abas serão ignoradas.</span>
+              </div>
+
+              <!-- Google Apps Script Ready Box -->
+              <div class="form-group full-width" style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span style="font-weight:600; font-size:13px; color:#38bdf8;">
+                    <i class="fa-solid fa-code"></i> Script Pronto para o Google Sheets (Google Apps Script)
+                  </span>
+                  <button type="button" class="btn-sm btn-secondary" onclick="copyAppsScriptCode()">
+                    <i class="fa-solid fa-copy"></i> Copiar Código do Script
+                  </button>
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+                  Na sua planilha, vá em <strong>Extensões &gt; Apps Script</strong>, apague o conteúdo, cole o código abaixo e salve. Ele enviará automaticamente cada linha nova adicionada:
+                </p>
+                <textarea id="sheets-apps-script-preview" readonly rows="6" style="background:#0f172a; color:#a5f3fc; font-family:monospace; font-size:11px;"></textarea>
+              </div>
+
+              <!-- Section Divider -->
+              <div class="full-width" style="margin-top:10px; margin-bottom:10px; border-top:1px solid var(--border); padding-top:16px;">
+                <h4 style="font-size:15px; font-weight:600; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-table-columns" style="color:var(--primary);"></i> Mapeamento das Colunas da Planilha
+                </h4>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Indique o cabeçalho exato das colunas na primeira linha da sua planilha.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-map-name"><i class="fa-solid fa-user"></i> Coluna do Nome</label>
+                <input type="text" id="sheets-map-name" placeholder="Padrão: Nome, Cliente, Nome Completo">
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-map-phone"><i class="fa-solid fa-phone"></i> Coluna do Telefone / WhatsApp</label>
+                <input type="text" id="sheets-map-phone" placeholder="Padrão: Telefone, WhatsApp, Celular">
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-map-email"><i class="fa-solid fa-envelope"></i> Coluna do E-mail</label>
+                <input type="text" id="sheets-map-email" placeholder="Padrão: Email, E-mail">
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-map-notes"><i class="fa-solid fa-comment-dots"></i> Coluna de Observações / Interesse</label>
+                <input type="text" id="sheets-map-notes" placeholder="Ex: Observações, Interesse, Cidade">
+              </div>
+
+              <!-- Section Divider -->
+              <div class="full-width" style="margin-top:10px; margin-bottom:10px; border-top:1px solid var(--border); padding-top:16px;">
+                <h4 style="font-size:15px; font-weight:600; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+                  <i class="fa-solid fa-paper-plane" style="color:var(--success);"></i> Automações & Disparador WhatsApp
+                </h4>
+              </div>
+
+              <div class="form-group full-width" style="display:flex; flex-direction:column; gap:10px;">
+                <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="sheets-auto-create-lead" checked>
+                  <span><strong>Criar Lead no CRM automaticamente</strong> ao entrar nova linha</span>
+                </label>
+
+                <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="sheets-trigger-outbound">
+                  <span><strong>Disparar mensagem no WhatsApp imediatamente</strong> (aciona o Disparador)</span>
+                </label>
+              </div>
+
+              <!-- Outbound Message Template -->
+              <div class="form-group full-width" id="sheets-outbound-group">
+                <label for="sheets-outbound-message"><i class="fa-solid fa-message"></i> Mensagem Inicial de Abertura (WhatsApp)</label>
+                <textarea id="sheets-outbound-message" rows="3" placeholder="Olá {nome}, recebemos seus dados em nossa planilha! Sou o atendente da {empresa}. Como posso te ajudar?"></textarea>
+                <span class="field-hint">Variáveis disponíveis: <code>{nome}</code>, <code>{empresa}</code>, <code>{telefone}</code>.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-tags"><i class="fa-solid fa-tags"></i> Tags do Lead</label>
+                <input type="text" id="sheets-tags" placeholder="google_sheets, planilha_leads, vendas">
+              </div>
+
+              <div class="form-group">
+                <label for="sheets-default-status"><i class="fa-solid fa-circle-dot"></i> Status Inicial do Lead</label>
+                <select id="sheets-default-status">
+                  <option value="NEW">Novo (NEW)</option>
+                  <option value="ACTIVE">Em Atendimento (ACTIVE)</option>
+                  <option value="QUALIFIED">Qualificado (QUALIFIED)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+              <button type="button" class="btn-secondary" onclick="simulateIntegration('GOOGLE_SHEETS')">
+                <i class="fa-solid fa-vial"></i> Simular Linha da Planilha (Teste Rápido)
+              </button>
+              <button type="button" class="btn-primary" onclick="saveSheetsConfig()">
+                <i class="fa-solid fa-save"></i> Salvar Configuração Google Sheets
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB 3: MONITOR DE EVENTOS & LOGS ================= -->
+        <div id="tab-int-logs" class="inner-tab-content">
+          <div class="glass form-card">
+            <!-- Filter toolbar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <label style="font-size:13px; font-weight:600; color:var(--text-muted);">Filtrar por:</label>
+                <select id="int-log-filter-provider" onchange="loadIntegrationLogs()" style="width:auto; padding:6px 12px;">
+                  <option value="ALL">Todos os Provedores</option>
+                  <option value="META">Meta Lead Ads</option>
+                  <option value="GOOGLE_SHEETS">Google Sheets</option>
+                </select>
+
+                <select id="int-log-filter-status" onchange="loadIntegrationLogs()" style="width:auto; padding:6px 12px;">
+                  <option value="ALL">Todos os Status</option>
+                  <option value="SUCCESS">Sucesso</option>
+                  <option value="WARNING">Atenção</option>
+                  <option value="ERROR">Erro</option>
+                  <option value="IGNORED">Ignorado</option>
+                </select>
+              </div>
+
+              <button class="btn-secondary" onclick="loadIntegrationLogs()">
+                <i class="fa-solid fa-arrows-rotate"></i> Atualizar Logs
+              </button>
+            </div>
+
+            <!-- Logs Table Container -->
+            <div class="table-responsive">
+              <table class="leads-table">
+                <thead>
+                  <tr>
+                    <th>Data / Hora</th>
+                    <th>Origem</th>
+                    <th>Status</th>
+                    <th>Lead Mapeado</th>
+                    <th>Telefone</th>
+                    <th>Disparo WhatsApp</th>
+                    <th style="text-align:right;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="integration-logs-table-body">
+                  <tr>
+                    <td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">
+                      Carregando eventos de integração...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="integration-logs-empty" style="display:none; text-align:center; padding:40px; color:var(--text-muted);">
+              <i class="fa-solid fa-inbox" style="font-size:32px; opacity:0.5; margin-bottom:12px;"></i>
+              <p>Nenhum evento de integração recebido até o momento.</p>
+              <span style="font-size:12px;">Faça um teste utilizando o botão "Simular Lead" ou envie dados para o webhook.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ======================== PAGE: SETTINGS ======================== -->
       <section id="page-settings" class="page">
 
@@ -2575,6 +3002,65 @@
           <button type="submit" class="btn-accent"><i class="fa-solid fa-circle-check"></i> Criar Empresa</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+<!-- ============================================================
+     MODAL: Integration Payload Inspector & Consumer
+============================================================ -->
+<div id="modal-integration-payload" class="modal-backdrop" style="display:none;">
+  <div class="modal-card glass" style="max-width:700px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-code" style="color:var(--primary);"></i> Inspecionar Evento de Integração</h3>
+      <button class="modal-close" onclick="closeIntegrationPayloadModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+      <div id="modal-payload-meta" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:10px 14px;">
+        <div>
+          <span style="font-size:12px; color:var(--text-muted);">Provedor:</span>
+          <strong id="modal-payload-provider" style="margin-left:6px;">META</strong>
+        </div>
+        <div>
+          <span style="font-size:12px; color:var(--text-muted);">Status:</span>
+          <span id="modal-payload-status" class="badge" style="margin-left:6px;">SUCCESS</span>
+        </div>
+        <div>
+          <span style="font-size:12px; color:var(--text-muted);">Data:</span>
+          <span id="modal-payload-date" style="margin-left:6px; font-size:12px;">--</span>
+        </div>
+      </div>
+
+      <!-- Lead Mapped Summary -->
+      <div id="modal-payload-lead-summary" style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:8px; padding:12px;">
+        <h4 style="font-size:13px; font-weight:600; color:#818cf8; margin-bottom:6px;">
+          <i class="fa-solid fa-user-check"></i> Dados Mapeados do Lead
+        </h4>
+        <div id="modal-payload-parsed" style="font-size:13px; color:var(--text-main); display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+      </div>
+
+      <!-- Raw Payload JSON -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:13px; font-weight:600; color:var(--text-muted);">
+            <i class="fa-solid fa-brackets-curly"></i> Payload Bruto (JSON Recebido)
+          </label>
+          <button type="button" class="btn-sm btn-secondary" onclick="copyModalPayloadJson()">
+            <i class="fa-solid fa-copy"></i> Copiar JSON
+          </button>
+        </div>
+        <pre id="modal-payload-json" style="background:#090d16; color:#a5f3fc; padding:14px; border-radius:8px; font-size:11px; max-height:260px; overflow:auto; border:1px solid var(--border);"></pre>
+      </div>
+
+      <!-- Error message if any -->
+      <div id="modal-payload-error-wrap" style="display:none; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:10px 14px; color:#fca5a5; font-size:13px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span id="modal-payload-error-text"></span>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+      <button type="button" class="btn-secondary" onclick="closeIntegrationPayloadModal()">Fechar</button>
+      <button type="button" id="btn-modal-consume-event" class="btn-primary" onclick="consumeModalEvent()">
+        <i class="fa-solid fa-bolt"></i> Consumir / Reprocessar Este Lead
+      </button>
     </div>
   </div>
 </div>

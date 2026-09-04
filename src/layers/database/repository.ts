@@ -250,6 +250,43 @@ export interface AITrace {
   createdAt: Date;
 }
 
+export interface IntegrationConfig {
+  id: string;
+  tenantId: string;
+  provider: string; // 'META' | 'GOOGLE_SHEETS'
+  isEnabled: boolean;
+  verifyToken?: string | null;
+  accessToken?: string | null;
+  secretKey?: string | null;
+  formIds?: string | null;
+  pageIds?: string | null;
+  sheetNames?: string | null;
+  fieldMapping: string;
+  autoCreateLead: boolean;
+  triggerOutbound: boolean;
+  outboundMessage?: string | null;
+  tags: string[];
+  defaultStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IntegrationLog {
+  id: string;
+  tenantId: string;
+  provider: string; // 'META' | 'GOOGLE_SHEETS'
+  event: string;
+  status: string; // 'SUCCESS' | 'WARNING' | 'ERROR' | 'IGNORED'
+  leadId?: string | null;
+  leadPhone?: string | null;
+  leadName?: string | null;
+  rawPayload: string;
+  parsedData?: string | null;
+  messageSent?: string | null;
+  errorMessage?: string | null;
+  createdAt: Date;
+}
+
 /**
  * An In-Memory Database for testing/dev environment fallback
  */
@@ -272,6 +309,8 @@ class MemoryDatabase {
   public agentReflections: AgentReflection[] = [];
   public aiTraces: AITrace[] = [];
   public outboundCampaigns: OutboundCampaign[] = [];
+  public integrationConfigs: IntegrationConfig[] = [];
+  public integrationLogs: IntegrationLog[] = [];
   public systemSettings: SystemSetting = {
     id: 'global',
     aiProvider: process.env.AI_PROVIDER || 'GEMINI',
@@ -2235,6 +2274,259 @@ export class Repository {
       });
     } catch (err) {
       console.warn(`[Repository] Error resetting followUp for lead ${leadId}:`, err);
+    }
+  }
+
+  // ==========================================
+  //   INTEGRATION CONFIGS & LOGS METHODS
+  // ==========================================
+
+  public async getIntegrationConfigs(tenantId: string): Promise<IntegrationConfig[]> {
+    if (this.useMemory()) {
+      return this.memoryDb.integrationConfigs.filter(c => c.tenantId === tenantId);
+    }
+    try {
+      return await dbService.prisma.integrationConfig.findMany({
+        where: { tenantId }
+      }) as IntegrationConfig[];
+    } catch (err) {
+      console.warn('[Repository] Error getting integration configs:', err);
+      return [];
+    }
+  }
+
+  public async getIntegrationConfig(tenantId: string, provider: string): Promise<IntegrationConfig | null> {
+    if (this.useMemory()) {
+      return this.memoryDb.integrationConfigs.find(c => c.tenantId === tenantId && c.provider.toUpperCase() === provider.toUpperCase()) || null;
+    }
+    try {
+      return await dbService.prisma.integrationConfig.findUnique({
+        where: {
+          tenantId_provider: {
+            tenantId,
+            provider: provider.toUpperCase()
+          }
+        }
+      }) as IntegrationConfig | null;
+    } catch (err) {
+      console.warn(`[Repository] Error getting integration config for ${provider}:`, err);
+      return null;
+    }
+  }
+
+  public async upsertIntegrationConfig(
+    tenantId: string,
+    provider: string,
+    data: Partial<IntegrationConfig>
+  ): Promise<IntegrationConfig> {
+    const prov = provider.toUpperCase();
+    const now = new Date();
+
+    if (this.useMemory()) {
+      const idx = this.memoryDb.integrationConfigs.findIndex(
+        c => c.tenantId === tenantId && c.provider === prov
+      );
+      if (idx >= 0) {
+        const updated: IntegrationConfig = {
+          ...this.memoryDb.integrationConfigs[idx],
+          ...data,
+          updatedAt: now,
+        };
+        this.memoryDb.integrationConfigs[idx] = updated;
+        return updated;
+      } else {
+        const created: IntegrationConfig = {
+          id: `int-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+          tenantId,
+          provider: prov,
+          isEnabled: data.isEnabled ?? true,
+          verifyToken: data.verifyToken || `token_${Math.random().toString(36).substr(2, 12)}`,
+          accessToken: data.accessToken || null,
+          secretKey: data.secretKey || null,
+          formIds: data.formIds || null,
+          pageIds: data.pageIds || null,
+          sheetNames: data.sheetNames || null,
+          fieldMapping: data.fieldMapping || '{}',
+          autoCreateLead: data.autoCreateLead ?? true,
+          triggerOutbound: data.triggerOutbound ?? false,
+          outboundMessage: data.outboundMessage || null,
+          tags: data.tags || (prov === 'META' ? ['meta_ads'] : ['google_sheets']),
+          defaultStatus: data.defaultStatus || 'NEW',
+          createdAt: now,
+          updatedAt: now,
+        };
+        this.memoryDb.integrationConfigs.push(created);
+        return created;
+      }
+    }
+
+    try {
+      const res = await dbService.prisma.integrationConfig.upsert({
+        where: {
+          tenantId_provider: {
+            tenantId,
+            provider: prov,
+          }
+        },
+        update: {
+          ...data,
+          provider: prov,
+          updatedAt: now,
+        },
+        create: {
+          tenantId,
+          provider: prov,
+          isEnabled: data.isEnabled ?? true,
+          verifyToken: data.verifyToken || `token_${Math.random().toString(36).substr(2, 12)}`,
+          accessToken: data.accessToken || null,
+          secretKey: data.secretKey || null,
+          formIds: data.formIds || null,
+          pageIds: data.pageIds || null,
+          sheetNames: data.sheetNames || null,
+          fieldMapping: data.fieldMapping || '{}',
+          autoCreateLead: data.autoCreateLead ?? true,
+          triggerOutbound: data.triggerOutbound ?? false,
+          outboundMessage: data.outboundMessage || null,
+          tags: data.tags || (prov === 'META' ? ['meta_ads'] : ['google_sheets']),
+          defaultStatus: data.defaultStatus || 'NEW',
+        }
+      });
+      return res as IntegrationConfig;
+    } catch (err) {
+      console.error('[Repository] Error upserting integration config:', err);
+      throw err;
+    }
+  }
+
+  public async createIntegrationLog(data: Omit<IntegrationLog, 'id' | 'createdAt'>): Promise<IntegrationLog> {
+    const now = new Date();
+    const item: IntegrationLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      ...data,
+      createdAt: now,
+    };
+
+    if (this.useMemory()) {
+      this.memoryDb.integrationLogs.unshift(item);
+      return item;
+    }
+
+    try {
+      const res = await dbService.prisma.integrationLog.create({
+        data: {
+          tenantId: data.tenantId,
+          provider: data.provider.toUpperCase(),
+          event: data.event || 'lead_received',
+          status: data.status || 'SUCCESS',
+          leadId: data.leadId || null,
+          leadPhone: data.leadPhone || null,
+          leadName: data.leadName || null,
+          rawPayload: data.rawPayload || '{}',
+          parsedData: data.parsedData || null,
+          messageSent: data.messageSent || null,
+          errorMessage: data.errorMessage || null,
+        }
+      });
+      return res as IntegrationLog;
+    } catch (err) {
+      console.warn('[Repository] Error creating integration log:', err);
+      return item;
+    }
+  }
+
+  public async getIntegrationLogs(
+    tenantId: string,
+    options?: { provider?: string; status?: string; limit?: number }
+  ): Promise<IntegrationLog[]> {
+    const limit = Math.min(options?.limit || 100, 500);
+
+    if (this.useMemory()) {
+      return this.memoryDb.integrationLogs
+        .filter(l => {
+          if (l.tenantId !== tenantId) return false;
+          if (options?.provider && l.provider.toUpperCase() !== options.provider.toUpperCase()) return false;
+          if (options?.status && l.status.toUpperCase() !== options.status.toUpperCase()) return false;
+          return true;
+        })
+        .slice(0, limit);
+    }
+
+    try {
+      const where: any = { tenantId };
+      if (options?.provider && options.provider !== 'ALL') {
+        where.provider = options.provider.toUpperCase();
+      }
+      if (options?.status && options.status !== 'ALL') {
+        where.status = options.status.toUpperCase();
+      }
+
+      const res = await dbService.prisma.integrationLog.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      });
+      return res as IntegrationLog[];
+    } catch (err) {
+      console.warn('[Repository] Error getting integration logs:', err);
+      return [];
+    }
+  }
+
+  public async getIntegrationLogById(id: string): Promise<IntegrationLog | null> {
+    if (this.useMemory()) {
+      return this.memoryDb.integrationLogs.find(l => l.id === id) || null;
+    }
+    try {
+      return await dbService.prisma.integrationLog.findUnique({
+        where: { id }
+      }) as IntegrationLog | null;
+    } catch (err) {
+      console.warn(`[Repository] Error getting integration log ${id}:`, err);
+      return null;
+    }
+  }
+
+  public async getIntegrationStats(tenantId: string): Promise<{
+    total: number;
+    metaCount: number;
+    sheetsCount: number;
+    leadsCreated: number;
+    messagesSent: number;
+    errorCount: number;
+  }> {
+    if (this.useMemory()) {
+      const logs = this.memoryDb.integrationLogs.filter(l => l.tenantId === tenantId);
+      return {
+        total: logs.length,
+        metaCount: logs.filter(l => l.provider === 'META').length,
+        sheetsCount: logs.filter(l => l.provider === 'GOOGLE_SHEETS').length,
+        leadsCreated: logs.filter(l => Boolean(l.leadId)).length,
+        messagesSent: logs.filter(l => Boolean(l.messageSent)).length,
+        errorCount: logs.filter(l => l.status === 'ERROR').length,
+      };
+    }
+
+    try {
+      const [total, metaCount, sheetsCount, leadsCreated, messagesSent, errorCount] = await Promise.all([
+        dbService.prisma.integrationLog.count({ where: { tenantId } }),
+        dbService.prisma.integrationLog.count({ where: { tenantId, provider: 'META' } }),
+        dbService.prisma.integrationLog.count({ where: { tenantId, provider: 'GOOGLE_SHEETS' } }),
+        dbService.prisma.integrationLog.count({ where: { tenantId, leadId: { not: null } } }),
+        dbService.prisma.integrationLog.count({ where: { tenantId, messageSent: { not: null } } }),
+        dbService.prisma.integrationLog.count({ where: { tenantId, status: 'ERROR' } }),
+      ]);
+
+      return {
+        total,
+        metaCount,
+        sheetsCount,
+        leadsCreated,
+        messagesSent,
+        errorCount,
+      };
+    } catch (err) {
+      console.warn('[Repository] Error calculating integration stats:', err);
+      return { total: 0, metaCount: 0, sheetsCount: 0, leadsCreated: 0, messagesSent: 0, errorCount: 0 };
     }
   }
 

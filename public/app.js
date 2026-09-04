@@ -396,6 +396,7 @@ async function loadPageData(page) {
     case 'training':      await loadTrainingPage(); break;
     case 'ai-logic':      await loadAILogicPage(); break;
     case 'outbound':      await loadOutboundPage(); break;
+    case 'integrations':  await loadIntegrations(); break;
     case 'leads':         await loadLeadsPage(); break;
     case 'conversations': await loadConversationsPage(); break;
     case 'media':         await loadMediaPage(); break;
@@ -1911,11 +1912,24 @@ function setupInnerTabs() {
   document.querySelectorAll('.inner-tab').forEach(tab => {
     tab.addEventListener('click', async () => {
       const tabId = tab.dataset.innerTab;
-      document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+      const tabWrap = tab.closest('.inner-tabs');
+      if (tabWrap) {
+        tabWrap.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+      } else {
+        document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+      }
       tab.classList.add('active');
+
       const content = id(tabId);
-      if (content) content.classList.add('active');
+      if (content) {
+        const page = content.closest('.page');
+        if (page) {
+          page.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+        } else {
+          document.querySelectorAll('.inner-tab-content').forEach(c => c.classList.remove('active'));
+        }
+        content.classList.add('active');
+      }
 
       // Load data for the newly activated tab
       if (state.tenantId) {
@@ -1924,6 +1938,7 @@ function setupInnerTabs() {
         if (tabId === 'tab-reflections')   await loadReflections();
         if (tabId === 'tab-corrections')   await loadCorrections();
         if (tabId === 'tab-brain')         await loadBrainStats();
+        if (tabId === 'tab-int-logs')      await loadIntegrationLogs();
       }
     });
   });
@@ -4022,5 +4037,463 @@ function copyApiCurl(type) {
   });
 }
 
+// ============================================================
+//   PAGE: INTEGRAÇÕES (META LEAD ADS & GOOGLE SHEETS)
+// ============================================================
 
+let currentIntegrationData = null;
+let currentModalLogItem = null;
 
+async function loadIntegrations() {
+  if (!state.tenantId) return;
+
+  try {
+    const res = await api.get(`/tenants/${state.tenantId}/integrations`);
+    currentIntegrationData = res;
+
+    // 1. Atualizar Estatísticas e Cards
+    const stats = res.stats || { total: 0, metaCount: 0, sheetsCount: 0, leadsCreated: 0, messagesSent: 0, errorCount: 0 };
+    
+    // Meta Card
+    const metaCountEl = id('stat-meta-count');
+    if (metaCountEl) metaCountEl.textContent = stats.metaCount || 0;
+    const metaBadge = id('stat-meta-status-badge');
+    if (metaBadge) {
+      if (res.meta?.isEnabled) {
+        metaBadge.textContent = 'Ativo';
+        metaBadge.style.background = 'rgba(34,197,94,0.15)';
+        metaBadge.style.color = 'var(--success)';
+      } else {
+        metaBadge.textContent = 'Inativo';
+        metaBadge.style.background = 'rgba(148,163,184,0.15)';
+        metaBadge.style.color = 'var(--text-muted)';
+      }
+    }
+    const metaOutboundInfo = id('stat-meta-outbound-info');
+    if (metaOutboundInfo) {
+      metaOutboundInfo.textContent = res.meta?.triggerOutbound ? 'Disparo WhatsApp: Ativo' : 'Disparo: Desativado';
+      metaOutboundInfo.style.color = res.meta?.triggerOutbound ? 'var(--primary-light)' : 'var(--text-muted)';
+    }
+
+    // Google Sheets Card
+    const sheetsCountEl = id('stat-sheets-count');
+    if (sheetsCountEl) sheetsCountEl.textContent = stats.sheetsCount || 0;
+    const sheetsBadge = id('stat-sheets-status-badge');
+    if (sheetsBadge) {
+      if (res.googleSheets?.isEnabled) {
+        sheetsBadge.textContent = 'Ativo';
+        sheetsBadge.style.background = 'rgba(34,197,94,0.15)';
+        sheetsBadge.style.color = 'var(--success)';
+      } else {
+        sheetsBadge.textContent = 'Inativo';
+        sheetsBadge.style.background = 'rgba(148,163,184,0.15)';
+        sheetsBadge.style.color = 'var(--text-muted)';
+      }
+    }
+    const sheetsOutboundInfo = id('stat-sheets-outbound-info');
+    if (sheetsOutboundInfo) {
+      sheetsOutboundInfo.textContent = res.googleSheets?.triggerOutbound ? 'Disparo WhatsApp: Ativo' : 'Disparo: Desativado';
+      sheetsOutboundInfo.style.color = res.googleSheets?.triggerOutbound ? 'var(--primary-light)' : 'var(--text-muted)';
+    }
+
+    // Disparos e Eventos Totais
+    const sentEl = id('stat-integration-sent');
+    if (sentEl) sentEl.textContent = stats.messagesSent || 0;
+    const totalEventsEl = id('stat-total-events');
+    if (totalEventsEl) totalEventsEl.textContent = stats.total || 0;
+    const rateEl = id('stat-success-rate');
+    if (rateEl) {
+      const rate = stats.total > 0 ? Math.round(((stats.total - (stats.errorCount || 0)) / stats.total) * 100) : 100;
+      rateEl.textContent = `Taxa de Sucesso: ${rate}%`;
+    }
+
+    // 2. Preencher formulário Meta Lead Ads
+    if (res.meta) {
+      const m = res.meta;
+      const isEnabledEl = id('meta-is-enabled');
+      if (isEnabledEl) isEnabledEl.checked = m.isEnabled ?? true;
+      const urlEl = id('meta-webhook-url');
+      if (urlEl) urlEl.value = m.webhookUrl || '';
+      const tokenEl = id('meta-verify-token');
+      if (tokenEl) tokenEl.value = m.verifyToken || '';
+      const accessEl = id('meta-access-token');
+      if (accessEl) accessEl.value = m.accessToken || '';
+      const formsEl = id('meta-form-ids');
+      if (formsEl) formsEl.value = m.formIds || '';
+
+      let metaMapping = {};
+      try { metaMapping = typeof m.fieldMapping === 'string' ? JSON.parse(m.fieldMapping) : (m.fieldMapping || {}); } catch(e) {}
+      if (id('meta-map-name')) id('meta-map-name').value = metaMapping.name || '';
+      if (id('meta-map-phone')) id('meta-map-phone').value = metaMapping.phone || '';
+      if (id('meta-map-email')) id('meta-map-email').value = metaMapping.email || '';
+      if (id('meta-map-notes')) id('meta-map-notes').value = metaMapping.notes || '';
+
+      if (id('meta-auto-create-lead')) id('meta-auto-create-lead').checked = m.autoCreateLead ?? true;
+      if (id('meta-trigger-outbound')) id('meta-trigger-outbound').checked = m.triggerOutbound ?? false;
+      if (id('meta-outbound-message')) id('meta-outbound-message').value = m.outboundMessage || '';
+      if (id('meta-tags')) id('meta-tags').value = (m.tags || ['meta_ads']).join(', ');
+      if (id('meta-default-status')) id('meta-default-status').value = m.defaultStatus || 'NEW';
+    }
+
+    // 3. Preencher formulário Google Sheets
+    if (res.googleSheets) {
+      const s = res.googleSheets;
+      const isEnabledEl = id('sheets-is-enabled');
+      if (isEnabledEl) isEnabledEl.checked = s.isEnabled ?? true;
+      const urlEl = id('sheets-webhook-url');
+      if (urlEl) urlEl.value = s.webhookUrl || '';
+      const secretEl = id('sheets-secret-key');
+      if (secretEl) secretEl.value = s.secretKey || '';
+      const namesEl = id('sheets-names');
+      if (namesEl) namesEl.value = s.sheetNames || '';
+
+      let sheetsMapping = {};
+      try { sheetsMapping = typeof s.fieldMapping === 'string' ? JSON.parse(s.fieldMapping) : (s.fieldMapping || {}); } catch(e) {}
+      if (id('sheets-map-name')) id('sheets-map-name').value = sheetsMapping.name || '';
+      if (id('sheets-map-phone')) id('sheets-map-phone').value = sheetsMapping.phone || '';
+      if (id('sheets-map-email')) id('sheets-map-email').value = sheetsMapping.email || '';
+      if (id('sheets-map-notes')) id('sheets-map-notes').value = sheetsMapping.notes || '';
+
+      if (id('sheets-auto-create-lead')) id('sheets-auto-create-lead').checked = s.autoCreateLead ?? true;
+      if (id('sheets-trigger-outbound')) id('sheets-trigger-outbound').checked = s.triggerOutbound ?? false;
+      if (id('sheets-outbound-message')) id('sheets-outbound-message').value = s.outboundMessage || '';
+      if (id('sheets-tags')) id('sheets-tags').value = (s.tags || ['google_sheets']).join(', ');
+      if (id('sheets-default-status')) id('sheets-default-status').value = s.defaultStatus || 'NEW';
+
+      // Atualizar preview do Google Apps Script
+      updateAppsScriptPreview(s.webhookUrl, s.secretKey);
+    }
+
+    // 4. Carregar Logs de Eventos
+    await loadIntegrationLogs();
+
+  } catch (err) {
+    console.error('Erro ao carregar integrações:', err);
+    showToast('Erro ao carregar dados de integração', 'error');
+  }
+}
+
+function updateAppsScriptPreview(webhookUrl, secretKey) {
+  const previewEl = id('sheets-apps-script-preview');
+  if (!previewEl) return;
+
+  const scriptCode = `/**
+ * Script de Envio Automático para SDR Inteligente
+ * Adicione em: Extensões > Apps Script
+ */
+function onEdit(e) {
+  // Dispara quando uma linha é preenchida
+  sendRowToSDR(e.range.getRow());
+}
+
+function sendRowToSDR(rowNumber) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  if (rowNumber <= 1) return; // Ignora linha de cabeçalho
+  
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var rowData = sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  var payload = {
+    sheetName: sheet.getName(),
+    rowNumber: rowNumber,
+    secretToken: "${secretKey || ''}"
+  };
+  
+  for (var i = 0; i < headers.length; i++) {
+    var key = String(headers[i]).trim();
+    if (key) {
+      payload[key] = rowData[i];
+    }
+  }
+  
+  var options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+  
+  UrlFetchApp.fetch("${webhookUrl}", options);
+}`;
+
+  previewEl.value = scriptCode;
+}
+
+async function saveMetaConfig() {
+  if (!state.tenantId) return;
+
+  const mapping = {
+    name: id('meta-map-name')?.value?.trim() || '',
+    phone: id('meta-map-phone')?.value?.trim() || '',
+    email: id('meta-map-email')?.value?.trim() || '',
+    notes: id('meta-map-notes')?.value?.trim() || ''
+  };
+
+  const payload = {
+    isEnabled: id('meta-is-enabled')?.checked ?? true,
+    verifyToken: id('meta-verify-token')?.value?.trim() || undefined,
+    accessToken: id('meta-access-token')?.value?.trim() || undefined,
+    formIds: id('meta-form-ids')?.value?.trim() || undefined,
+    fieldMapping: mapping,
+    autoCreateLead: id('meta-auto-create-lead')?.checked ?? true,
+    triggerOutbound: id('meta-trigger-outbound')?.checked ?? false,
+    outboundMessage: id('meta-outbound-message')?.value?.trim() || undefined,
+    tags: id('meta-tags')?.value?.trim() || undefined,
+    defaultStatus: id('meta-default-status')?.value || 'NEW'
+  };
+
+  try {
+    await api.post(`/tenants/${state.tenantId}/integrations/meta`, payload);
+    showToast('Configuração do Meta Lead Ads salva com sucesso!', 'success');
+    await loadIntegrations();
+  } catch (err) {
+    showToast(`Erro ao salvar Meta: ${err.message}`, 'error');
+  }
+}
+
+async function saveSheetsConfig() {
+  if (!state.tenantId) return;
+
+  const mapping = {
+    name: id('sheets-map-name')?.value?.trim() || '',
+    phone: id('sheets-map-phone')?.value?.trim() || '',
+    email: id('sheets-map-email')?.value?.trim() || '',
+    notes: id('sheets-map-notes')?.value?.trim() || ''
+  };
+
+  const payload = {
+    isEnabled: id('sheets-is-enabled')?.checked ?? true,
+    secretKey: id('sheets-secret-key')?.value?.trim() || undefined,
+    sheetNames: id('sheets-names')?.value?.trim() || undefined,
+    fieldMapping: mapping,
+    autoCreateLead: id('sheets-auto-create-lead')?.checked ?? true,
+    triggerOutbound: id('sheets-trigger-outbound')?.checked ?? false,
+    outboundMessage: id('sheets-outbound-message')?.value?.trim() || undefined,
+    tags: id('sheets-tags')?.value?.trim() || undefined,
+    defaultStatus: id('sheets-default-status')?.value || 'NEW'
+  };
+
+  try {
+    await api.post(`/tenants/${state.tenantId}/integrations/google_sheets`, payload);
+    showToast('Configuração do Google Sheets salva com sucesso!', 'success');
+    await loadIntegrations();
+  } catch (err) {
+    showToast(`Erro ao salvar Google Sheets: ${err.message}`, 'error');
+  }
+}
+
+async function loadIntegrationLogs() {
+  if (!state.tenantId) return;
+
+  const tbody = id('integration-logs-table-body');
+  const emptyEl = id('integration-logs-empty');
+  if (!tbody) return;
+
+  const providerFilter = id('int-log-filter-provider')?.value || 'ALL';
+  const statusFilter = id('int-log-filter-status')?.value || 'ALL';
+
+  try {
+    const logs = await api.get(`/tenants/${state.tenantId}/integrations/logs?provider=${providerFilter}&status=${statusFilter}&limit=100`);
+
+    const badgeEl = id('badge-int-logs-count');
+    if (badgeEl) badgeEl.textContent = logs.length;
+
+    if (!logs || logs.length === 0) {
+      tbody.innerHTML = '';
+      if (emptyEl) emptyEl.style.display = 'block';
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    tbody.innerHTML = logs.map(l => {
+      const dateStr = new Date(l.createdAt).toLocaleString('pt-BR');
+      const isMeta = l.provider === 'META';
+      const originBadge = isMeta
+        ? `<span class="badge" style="background:rgba(59,130,246,0.15); color:#60a5fa;"><i class="fa-brands fa-meta"></i> Meta Ads</span>`
+        : `<span class="badge" style="background:rgba(34,197,94,0.15); color:#4ade80;"><i class="fa-solid fa-file-excel"></i> Sheets</span>`;
+
+      let statusBadge = '';
+      if (l.status === 'SUCCESS') {
+        statusBadge = `<span class="badge" style="background:rgba(34,197,94,0.15); color:var(--success);">Sucesso</span>`;
+      } else if (l.status === 'WARNING') {
+        statusBadge = `<span class="badge" style="background:rgba(234,179,8,0.15); color:#facc15;">Atenção</span>`;
+      } else if (l.status === 'IGNORED') {
+        statusBadge = `<span class="badge" style="background:rgba(148,163,184,0.15); color:var(--text-muted);">Ignorado</span>`;
+      } else {
+        statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--danger);">Erro</span>`;
+      }
+
+      const leadInfo = l.leadName
+        ? `<strong>${escapeHtml(l.leadName)}</strong>`
+        : `<span style="color:var(--text-muted);">(Sem nome)</span>`;
+
+      const phoneInfo = l.leadPhone
+        ? `<a href="https://wa.me/${l.leadPhone}" target="_blank" style="color:var(--primary-light); text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${escapeHtml(l.leadPhone)}</a>`
+        : `<span style="color:var(--text-muted);">--</span>`;
+
+      const outboundInfo = l.messageSent
+        ? `<span class="badge" style="background:rgba(168,85,247,0.15); color:#c084fc;" title="${escapeHtml(l.messageSent)}"><i class="fa-solid fa-check"></i> Enviado</span>`
+        : `<span style="color:var(--text-muted); font-size:12px;">Não disparado</span>`;
+
+      const logJsonEscaped = encodeURIComponent(JSON.stringify(l));
+
+      return `
+        <tr>
+          <td style="font-size:12px; color:var(--text-muted); white-space:nowrap;">${dateStr}</td>
+          <td>${originBadge}</td>
+          <td>${statusBadge}</td>
+          <td>${leadInfo}</td>
+          <td>${phoneInfo}</td>
+          <td>${outboundInfo}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <button class="btn-sm btn-secondary" onclick="openIntegrationPayloadModal('${logJsonEscaped}')" title="Inspecionar Payload">
+              <i class="fa-solid fa-code"></i> Inspecionar
+            </button>
+            <button class="btn-sm btn-primary" onclick="consumeSpecificLog('${l.id}')" title="Consumir / Reprocessar" style="margin-left:6px;">
+              <i class="fa-solid fa-bolt"></i> Consumir
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Erro ao carregar logs de integração:', err);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger); padding:20px;">Erro ao carregar histórico: ${err.message}</td></tr>`;
+  }
+}
+
+async function simulateIntegration(provider) {
+  if (!state.tenantId) return;
+
+  try {
+    showToast(`Enviando simulação de lead ${provider === 'META' ? 'Meta Ads' : 'Google Sheets'}...`, 'info');
+    const res = await api.post(`/tenants/${state.tenantId}/integrations/simulate`, { provider });
+    
+    if (res.success) {
+      showToast(`🎉 Lead simulado com sucesso! (${res.leadPhone || res.leadName || 'OK'})`, 'success');
+      await loadIntegrations();
+      // Ativa a aba de logs para ver o resultado
+      document.querySelector('[data-inner-tab="tab-int-logs"]')?.click();
+    } else {
+      showToast(`Aviso na simulação: ${res.message}`, 'warning');
+      await loadIntegrations();
+    }
+  } catch (err) {
+    showToast(`Erro na simulação: ${err.message}`, 'error');
+  }
+}
+
+async function consumeSpecificLog(logId) {
+  if (!state.tenantId || !logId) return;
+
+  try {
+    showToast('Consumindo / Reprocessando evento...', 'info');
+    const res = await api.post(`/tenants/${state.tenantId}/integrations/logs/${logId}/consume`);
+    
+    if (res.success) {
+      showToast(`⚡ Evento consumido com sucesso! Lead: ${res.leadPhone || res.leadName || 'OK'}`, 'success');
+      await loadIntegrations();
+    } else {
+      showToast(`Aviso: ${res.message}`, 'warning');
+    }
+  } catch (err) {
+    showToast(`Erro ao consumir evento: ${err.message}`, 'error');
+  }
+}
+
+// Modal Payload Inspector Functions
+function openIntegrationPayloadModal(encodedJson) {
+  try {
+    const log = JSON.parse(decodeURIComponent(encodedJson));
+    currentModalLogItem = log;
+
+    const modal = id('modal-integration-payload');
+    if (!modal) return;
+
+    id('modal-payload-provider').textContent = log.provider;
+    id('modal-payload-status').textContent = log.status;
+    id('modal-payload-status').className = `badge ${log.status === 'SUCCESS' ? 'badge-success' : (log.status === 'ERROR' ? 'badge-danger' : 'badge-warning')}`;
+    id('modal-payload-date').textContent = new Date(log.createdAt).toLocaleString('pt-BR');
+
+    // Parsed Lead Data Summary
+    const parsedWrap = id('modal-payload-parsed');
+    if (parsedWrap) {
+      let parsed = {};
+      try { parsed = JSON.parse(log.parsedData || '{}'); } catch(e) {}
+      parsedWrap.innerHTML = `
+        <div><strong>Nome:</strong> ${escapeHtml(parsed.name || log.leadName || '(Não informado)')}</div>
+        <div><strong>Telefone:</strong> ${escapeHtml(parsed.phone || log.leadPhone || '(Não informado)')}</div>
+        <div><strong>Email:</strong> ${escapeHtml(parsed.email || '(Não informado)')}</div>
+        <div><strong>Notas/Extras:</strong> ${escapeHtml(parsed.notes || '(Nenhuma)')}</div>
+      `;
+    }
+
+    // Raw JSON Formatted
+    const jsonEl = id('modal-payload-json');
+    if (jsonEl) {
+      let rawObj = {};
+      try { rawObj = JSON.parse(log.rawPayload || '{}'); } catch(e) { rawObj = log.rawPayload; }
+      jsonEl.textContent = JSON.stringify(rawObj, null, 2);
+    }
+
+    // Error message wrap
+    const errWrap = id('modal-payload-error-wrap');
+    const errText = id('modal-payload-error-text');
+    if (log.errorMessage) {
+      if (errWrap) errWrap.style.display = 'block';
+      if (errText) errText.textContent = log.errorMessage;
+    } else {
+      if (errWrap) errWrap.style.display = 'none';
+    }
+
+    modal.style.display = 'flex';
+  } catch (err) {
+    console.error('Erro ao abrir modal de payload:', err);
+  }
+}
+
+function closeIntegrationPayloadModal() {
+  const modal = id('modal-integration-payload');
+  if (modal) modal.style.display = 'none';
+  currentModalLogItem = null;
+}
+
+function copyModalPayloadJson() {
+  const jsonEl = id('modal-payload-json');
+  if (!jsonEl) return;
+  navigator.clipboard.writeText(jsonEl.textContent).then(() => {
+    showToast('Payload JSON copiado!', 'success');
+  });
+}
+
+async function consumeModalEvent() {
+  if (!currentModalLogItem) return;
+  await consumeSpecificLog(currentModalLogItem.id);
+  closeIntegrationPayloadModal();
+}
+
+function copyInputText(inputId) {
+  const input = id(inputId);
+  if (!input) return;
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('URL copiada para a área de transferência!', 'success');
+  });
+}
+
+function copyAppsScriptCode() {
+  const preview = id('sheets-apps-script-preview');
+  if (!preview) return;
+  navigator.clipboard.writeText(preview.value).then(() => {
+    showToast('Código do Apps Script copiado!', 'success');
+  });
+}
+
+function generateRandomToken(inputId) {
+  const input = id(inputId);
+  if (!input) return;
+  const token = 'token_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 8);
+  input.value = token;
+  showToast('Novo token gerado! Lembre-se de salvar.', 'info');
+}

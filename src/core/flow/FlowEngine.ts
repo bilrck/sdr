@@ -28,6 +28,35 @@ export class FlowEngine {
   }
 
   /**
+   * Tenta iniciar um fluxo ativo configurado para eventos de integração (Meta ou Google Sheets) ou Novo Lead.
+   * Retorna true se um fluxo foi iniciado.
+   */
+  public async tryStartFlowForIntegration(tenantId: string, leadId: string, provider: 'META' | 'GOOGLE_SHEETS'): Promise<boolean> {
+    try {
+      const flows = await repo.getFlows(tenantId);
+      const activeFlows = flows.filter(f => f.isActive);
+      const provLower = provider.toLowerCase();
+
+      // Procura primeiro por trigger específico (ex: integration_meta ou integration_sheets)
+      // depois por trigger geral de novo lead (inbound_new_lead)
+      const matchedFlow = activeFlows.find(f =>
+        f.trigger === `integration_${provLower}` ||
+        f.trigger === `integration_${provider}` ||
+        (f.trigger === 'inbound_new_lead' && (!f.triggerValue || f.triggerValue.toLowerCase().includes(provLower)))
+      );
+
+      if (matchedFlow) {
+        console.log(`[FlowEngine] Disparando fluxo "${matchedFlow.name}" (${matchedFlow.id}) via integração ${provider} para o Lead ${leadId}`);
+        await this.startFlow(matchedFlow, leadId);
+        return true;
+      }
+    } catch (err) {
+      console.warn(`[FlowEngine] Erro ao verificar fluxo para integração ${provider}:`, err);
+    }
+    return false;
+  }
+
+  /**
    * Inicia um fluxo para um lead específico.
    */
   public async startFlow(flow: Flow, leadId: string): Promise<void> {
