@@ -350,6 +350,7 @@ const PAGE_TITLES = {
   conversations: 'Conversas',
   media:         'Mídias',
   analytics:     'Analytics',
+  integrations:  'Integrações & Webhooks',
   settings:      'Configurações',
   admin:         'Painel Admin Global',
 };
